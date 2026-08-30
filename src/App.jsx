@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { config, links, faqs } from "./config.js";
+import ProductHero3D from "./components/ProductHero3D.jsx";
 
 const C = {
   amber: "#FFB800",
@@ -275,25 +276,32 @@ function Hero() {
         <div
           style={{
             position: "absolute",
-            width: "78%",
+            width: "82%",
             aspectRatio: "1",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle,rgba(190,0,0,.75),rgba(255,60,0,.18) 42%,transparent 68%)",
+              "radial-gradient(circle,rgba(190,0,0,.7),rgba(255,120,20,.22) 40%,transparent 68%)",
             animation: "mwoaGlow 6s ease-in-out infinite",
+            pointerEvents: "none",
           }}
         />
-        <img
-          src="/assets/logo.png"
-          alt="MWOA emblem"
+        <ProductHero3D />
+        <span
           style={{
-            position: "relative",
-            width: "100%",
-            maxWidth: 660,
-            display: "block",
-            animation: "mwoaFloat 9s ease-in-out infinite",
+            position: "absolute",
+            bottom: 6,
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontFamily: C.mono,
+            fontSize: 9.5,
+            letterSpacing: ".28em",
+            color: "rgba(212,175,55,.6)",
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
           }}
-        />
+        >
+          ↺ GLISSEZ POUR TOURNER
+        </span>
       </div>
     </section>
   );
