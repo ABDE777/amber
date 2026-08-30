@@ -1,0 +1,124 @@
+:root {
+  --amber-glow: #ffb800;
+  --heritage-gold: #d4af37;
+  --ruby: #990000;
+  --obsidian: #131313;
+  --ink: #0b0708;
+  --paper: #ede7da;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--ink);
+}
+
+body {
+  color: var(--paper);
+  font-family: Karla, system-ui, sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--heritage-gold);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--amber-glow);
+}
+
+::selection {
+  background: var(--ruby);
+  color: var(--amber-glow);
+}
+
+@keyframes mwoaFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes mwoaGlow {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* --- hover states (were `style-hover` in the Design Canvas) --- */
+.nav-link {
+  transition: color 0.2s ease;
+}
+.nav-link:hover {
+  color: var(--amber-glow);
+}
+
+.btn-ruby {
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.btn-ruby:hover {
+  background: #b40000;
+  color: #fff;
+}
+
+.btn-gold {
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.btn-gold:hover {
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--amber-glow);
+}
+
+.faq-row {
+  transition: background 0.2s ease;
+}
+.faq-row:hover {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+/* --- responsive: collapse the two-column layouts on small screens --- */
+@media (max-width: 860px) {
+  .mwoa-cols {
+    grid-template-columns: 1fr !important;
+    gap: 48px !important;
+  }
+  .mwoa-nav-links {
+    display: none !important;
+  }
+  .mwoa-hero {
+    padding: 120px 24px 70px !important;
+    text-align: center;
+  }
+  .mwoa-section {
+    padding: 80px 24px !important;
+  }
+  .mwoa-gallery {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: none !important;
+  }
+  .mwoa-gallery > div {
+    grid-row: auto !important;
+    grid-column: auto !important;
+    min-height: 160px;
+  }
+  .mwoa-testimonials {
+    grid-template-columns: 1fr !important;
+  }
+  .mwoa-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+}
