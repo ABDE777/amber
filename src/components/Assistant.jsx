@@ -11,7 +11,7 @@ const C = {
 };
 
 /**
- * Floating AI order assistant. Talks to /api/assistant (Claude-backed) to guide
+ * Floating AI order assistant. Talks to /api/assistant (Groq-backed) to guide
  * the customer and place the order. If the endpoint isn't configured (no API
  * key), it shows a short notice and points to the order form instead.
  */
