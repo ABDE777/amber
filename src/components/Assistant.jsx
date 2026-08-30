@@ -7,7 +7,7 @@ const C = {
   ruby: "#990000",
   paper: "#F6EFD9",
   body: "#c3bbab",
-  panel: "#160c0d",
+  panel: "#332626",
 };
 
 /**
@@ -112,7 +112,7 @@ export default function Assistant({ onOrder }) {
             boxShadow: "0 24px 60px rgba(0,0,0,.6)",
           }}
         >
-          <div style={{ padding: "16px 18px", borderBottom: "1px solid rgba(212,175,55,.25)", background: "linear-gradient(160deg,#1c0f10,#140b0c)" }}>
+          <div style={{ padding: "16px 18px", borderBottom: "1px solid rgba(212,175,55,.25)", background: "linear-gradient(160deg,#352727,#140b0c)" }}>
             <div style={{ fontFamily: fonts.display, fontSize: 18, fontWeight: 700, color: C.paper }}>{a.title}</div>
             <div style={{ fontFamily: fonts.ui, fontSize: 12, color: C.body, marginTop: 2 }}>{a.sub}</div>
           </div>
@@ -128,7 +128,7 @@ export default function Assistant({ onOrder }) {
               </Bubble>
             )}
             {disabled && (
-              <div style={{ fontFamily: fonts.ui, fontSize: 13, color: C.body, background: "#20100f", border: "1px solid rgba(212,175,55,.25)", borderRadius: 8, padding: 12 }}>
+              <div style={{ fontFamily: fonts.ui, fontSize: 13, color: C.body, background: "#3a2827", border: "1px solid rgba(212,175,55,.25)", borderRadius: 8, padding: 12 }}>
                 {a.disabled}
                 <button
                   onClick={() => { setOpen(false); onOrder?.(); }}
@@ -147,7 +147,7 @@ export default function Assistant({ onOrder }) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKey}
                 placeholder={a.placeholder}
-                style={{ flex: 1, background: "#0f0809", border: "1px solid rgba(212,175,55,.35)", color: C.paper, fontFamily: fonts.ui, fontSize: 15, padding: "11px 12px", borderRadius: 6, outline: "none" }}
+                style={{ flex: 1, background: "#2f2323", border: "1px solid rgba(212,175,55,.35)", color: C.paper, fontFamily: fonts.ui, fontSize: 15, padding: "11px 12px", borderRadius: 6, outline: "none" }}
               />
               <button
                 onClick={send}
@@ -171,7 +171,7 @@ function Bubble({ role, children, fonts }) {
       style={{
         alignSelf: isUser ? "flex-end" : "flex-start",
         maxWidth: "82%",
-        background: isUser ? "#3a0507" : "#241315",
+        background: isUser ? "#642a2b" : "#3c2c2c",
         border: `1px solid ${isUser ? "rgba(255,184,0,.3)" : "rgba(212,175,55,.2)"}`,
         color: isUser ? "#FFE9A8" : "#e6ddcd",
         fontFamily: fonts.ui,

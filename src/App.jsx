@@ -15,7 +15,7 @@ const C = {
   ruby: "#990000",
   paper: "#F6EFD9",
   body: "#c3bbab",
-  ink: "#0b0708",
+  ink: "#2a1e1f",
   mono: "'IBM Plex Mono', monospace",
   brand: "Marcellus, serif",
 };
@@ -64,7 +64,7 @@ function Nav({ onOrder }) {
         justifyContent: "space-between",
         gap: 20,
         padding: "14px 40px",
-        background: "rgba(14,7,8,.86)",
+        background: "rgba(42,30,31,.9)",
         backdropFilter: "blur(14px)",
         borderBottom: "1px solid rgba(153,0,0,.55)",
         boxShadow: "0 1px 22px rgba(153,0,0,.35)",
@@ -76,7 +76,7 @@ function Nav({ onOrder }) {
           <span style={{ fontFamily: C.brand, fontSize: 19, letterSpacing: ".28em", color: C.gold, lineHeight: 1 }}>
             MWOA
           </span>
-          <span style={{ fontFamily: C.mono, fontSize: 8.5, letterSpacing: ".2em", color: "#7d7466" }}>
+          <span style={{ fontFamily: C.mono, fontSize: 8.5, letterSpacing: ".2em", color: "#988e80" }}>
             {t.nav.brandSub}
           </span>
         </div>
@@ -126,7 +126,7 @@ function Hero({ onOrder }) {
         gap: 40,
         padding: "150px 60px 90px",
         background:
-          "radial-gradient(1200px 780px at 26% 42%, #6b0000 0%, #2a0708 38%, #12080a 68%, #0b0708 100%)",
+          "radial-gradient(1200px 780px at 26% 42%, #8a2222 0%, #5a2b2c 38%, #342726 68%, #2a1e1f 100%)",
       }}
     >
       <div
@@ -273,7 +273,7 @@ function WhatIs() {
   const { t, fonts } = useLang();
   const h2 = useH2();
   return (
-    <section id="what" className="mwoa-section" style={{ padding: "120px 60px", background: "#120b0c" }}>
+    <section id="what" className="mwoa-section" style={{ padding: "120px 60px", background: "#342726" }}>
       <div
         className="mwoa-cols reveal"
         style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: ".85fr 1.15fr", gap: 80 }}
@@ -287,7 +287,7 @@ function WhatIs() {
           <p style={{ fontSize: 21, lineHeight: 2, color: "#d5cdbd", margin: 0, fontFamily: fonts.ui }}>{t.what.body}</p>
           <div className="mwoa-cards" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, marginTop: 52, background: "rgba(153,0,0,.55)" }}>
             {t.what.cards.map(([title, text]) => (
-              <div key={title} style={{ background: "linear-gradient(160deg,#2a0e10,#1a0c0d)", padding: "28px 24px", borderTop: "2px solid #990000" }}>
+              <div key={title} style={{ background: "linear-gradient(160deg,#4b3231,#3b2c2c)", padding: "28px 24px", borderTop: "2px solid #990000" }}>
                 <div style={{ fontFamily: fonts.display, fontSize: 28, fontWeight: 700, color: C.amber }}>{title}</div>
                 <div style={{ fontSize: 15, lineHeight: 1.9, color: "#a9a193", marginTop: 10, fontFamily: fonts.ui }}>{text}</div>
               </div>
@@ -303,7 +303,7 @@ function Origin() {
   const { t, fonts } = useLang();
   const h2 = useH2();
   return (
-    <section id="origin" className="mwoa-section" style={{ padding: "120px 60px", background: "linear-gradient(180deg,#0b0708,#1c0a0b)" }}>
+    <section id="origin" className="mwoa-section" style={{ padding: "120px 60px", background: "linear-gradient(180deg,#2a1e1f,#3d2727)" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
         <SectionLabel>{t.origin.label}</SectionLabel>
         <div className="mwoa-cols" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }}>
@@ -313,8 +313,8 @@ function Origin() {
             <p style={{ fontSize: 17, lineHeight: 2, color: C.body, margin: 0, fontFamily: fonts.ui }}>{t.origin.p2}</p>
             <div style={{ display: "flex", gap: 2, marginTop: 14, background: "rgba(153,0,0,.55)" }}>
               {t.origin.boxes.map(([k, v]) => (
-                <div key={k} style={{ background: "#1a0c0d", padding: "20px 26px", flex: 1 }}>
-                  <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".16em", color: "#7d7466" }}>{k}</div>
+                <div key={k} style={{ background: "#3b2c2c", padding: "20px 26px", flex: 1 }}>
+                  <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".16em", color: "#988e80" }}>{k}</div>
                   <div style={{ fontFamily: fonts.display, fontSize: 22, fontWeight: 700, color: C.paper, marginTop: 6 }}>{v}</div>
                 </div>
               ))}
@@ -331,14 +331,14 @@ function Gallery() {
   const h2 = useH2();
   const spans = [{ gridRow: "span 2" }, {}, {}, { gridColumn: "span 2" }];
   return (
-    <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#0f0809" }}>
+    <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#2f2323" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 40, flexWrap: "wrap" }}>
           <div>
             <SectionLabel>{t.gallery.label}</SectionLabel>
             <h2 style={h2}>{t.gallery.h2}</h2>
           </div>
-          <p style={{ fontFamily: fonts.ui, fontSize: 14, lineHeight: 1.8, color: "#7d7466", maxWidth: 320, margin: 0 }}>{t.gallery.note}</p>
+          <p style={{ fontFamily: fonts.ui, fontSize: 14, lineHeight: 1.8, color: "#988e80", maxWidth: 320, margin: 0 }}>{t.gallery.note}</p>
         </div>
         <div className="mwoa-gallery" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gridTemplateRows: "200px 200px", gap: 2, background: "rgba(153,0,0,.55)" }}>
           {t.gallery.slots.map((label, i) => (
@@ -349,7 +349,7 @@ function Gallery() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "repeating-linear-gradient(45deg,#170a0b 0 12px,#200d0e 12px 24px)",
+                background: "repeating-linear-gradient(45deg,#382929 0 12px,#443131 12px 24px)",
                 border: "1px solid rgba(153,0,0,.45)",
               }}
             >
@@ -366,7 +366,7 @@ function Authenticity() {
   const { t, fonts } = useLang();
   const h2 = useH2();
   return (
-    <section id="proof" className="mwoa-section" style={{ padding: "120px 60px", background: "#120b0c", borderTop: "1px solid rgba(153,0,0,.5)" }}>
+    <section id="proof" className="mwoa-section" style={{ padding: "120px 60px", background: "#342726", borderTop: "1px solid rgba(153,0,0,.5)" }}>
       <div className="mwoa-cols reveal" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 70, alignItems: "center" }}>
         <div>
           <SectionLabel>{t.proof.label}</SectionLabel>
@@ -380,7 +380,7 @@ function Authenticity() {
             ))}
           </div>
         </div>
-        <div style={{ position: "relative", padding: 44, border: "1px solid rgba(212,175,55,.45)", background: "linear-gradient(150deg,#3a0507,#120b0c)" }}>
+        <div style={{ position: "relative", padding: 44, border: "1px solid rgba(212,175,55,.45)", background: "linear-gradient(150deg,#642a2b,#342726)" }}>
           <div style={{ position: "absolute", inset: 10, border: "1px solid rgba(212,175,55,.18)", pointerEvents: "none" }} />
           <div style={{ position: "relative", textAlign: "center" }}>
             <img src="/assets/whale.png" alt="" style={{ width: 120, display: "block", margin: "0 auto 22px" }} />
@@ -402,7 +402,7 @@ function Order({ onOrder }) {
   const { t, fonts } = useLang();
   const h2 = useH2();
   return (
-    <section id="buy" className="mwoa-section" style={{ padding: "120px 60px", background: "radial-gradient(1000px 620px at 50% 0%, #8a0000 0%, #3a0507 34%, #120b0c 72%)" }}>
+    <section id="buy" className="mwoa-section" style={{ padding: "120px 60px", background: "radial-gradient(1000px 620px at 50% 0%, #a62b2b 0%, #642a2b 34%, #342726 72%)" }}>
       <div className="reveal" style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
         <SectionLabel>{t.order.label}</SectionLabel>
         <h2 style={{ ...h2, fontSize: "clamp(2.1rem, 6vw, 3.4rem)" }}>{t.order.h2}</h2>
@@ -416,7 +416,7 @@ function Order({ onOrder }) {
             {t.order.cta}
           </button>
         </div>
-        <div style={{ fontFamily: fonts.ui, fontSize: 13, letterSpacing: ".04em", color: "#7d7466", marginTop: 22 }}>{t.order.note}</div>
+        <div style={{ fontFamily: fonts.ui, fontSize: 13, letterSpacing: ".04em", color: "#988e80", marginTop: 22 }}>{t.order.note}</div>
       </div>
     </section>
   );
@@ -425,7 +425,7 @@ function Order({ onOrder }) {
 function Footer() {
   const { t, fonts } = useLang();
   return (
-    <footer id="contact" style={{ padding: "90px 60px 50px", background: "#0b0708", borderTop: "2px solid #990000" }}>
+    <footer id="contact" style={{ padding: "90px 60px 50px", background: "#2a1e1f", borderTop: "2px solid #990000" }}>
       <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 60, alignItems: "start" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -435,19 +435,19 @@ function Footer() {
           <p style={{ fontSize: 15, lineHeight: 1.9, color: "#8d8578", margin: "20px 0 0", maxWidth: 340, fontFamily: fonts.ui }}>{t.footer.tagline}</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#7d7466", marginBottom: 4 }}>{t.footer.contact}</div>
+          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#988e80", marginBottom: 4 }}>{t.footer.contact}</div>
           <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>
             {t.footer.wa} · {config.whatsapp}
           </a>
           <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>{config.email}</a>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#7d7466", marginBottom: 4 }}>{t.footer.hours}</div>
+          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#988e80", marginBottom: 4 }}>{t.footer.hours}</div>
           <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: fonts.ui }}>{t.footer.hoursVal}</span>
           <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: fonts.ui }}>{t.footer.ship}</span>
         </div>
       </div>
-      <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#5c564d" }}>
+      <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#8f8474" }}>
         <span style={{ color: "#c00000", fontSize: 13, letterSpacing: ".3em" }}>© MWOA · 666</span>
         <span>{t.footer.country}</span>
       </div>
@@ -486,7 +486,7 @@ function AppInner() {
   }, []);
 
   return (
-    <div dir={dir} style={{ background: "#120b0c", overflowX: "hidden" }}>
+    <div dir={dir} style={{ background: "#342726", overflowX: "hidden" }}>
       <Nav onOrder={openModal} />
       <Hero onOrder={openModal} />
       <Marquee />

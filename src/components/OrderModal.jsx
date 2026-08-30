@@ -108,7 +108,7 @@ export default function OrderModal({ open, onClose }) {
         placeholder={placeholder}
         {...extra}
         style={{
-          background: "#0f0809",
+          background: "#2f2323",
           border: `1px solid ${errors[key] ? "#e0562e" : "rgba(212,175,55,.35)"}`,
           color: C.paper,
           fontSize: 16,
@@ -146,7 +146,7 @@ export default function OrderModal({ open, onClose }) {
           position: "relative",
           width: "100%",
           maxWidth: 480,
-          background: "linear-gradient(160deg,#1c0f10,#120b0c)",
+          background: "linear-gradient(160deg,#352727,#342726)",
           border: "1px solid rgba(212,175,55,.4)",
           boxShadow: "0 30px 80px rgba(0,0,0,.6)",
           padding: "38px 34px",
