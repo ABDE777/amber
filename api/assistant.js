@@ -7,6 +7,11 @@ const BLOCKED_REPLY = {
   en: "Sorry, I can't process that request. I'm happy to help with any question about ambergris or with completing your order.",
 };
 
+const ERROR_REPLY = {
+  ar: "عذراً، حدث خطأ مؤقت. يمكنك إتمام طلبك عبر زر «اطلب الآن».",
+  en: "Sorry, something went wrong. You can complete your order with the “Order now” button.",
+};
+
 // POST /api/assistant  { messages: [{role, content}], lang }
 // A guided order assistant. Chats with the customer, and once it has collected
 // the full name, quantity (grams), email and phone, it calls the submit_order
@@ -92,7 +97,9 @@ export default async function handler(req, res) {
     /* fail open */
   }
 
-  const client = new Anthropic();
+  // Trim in case the key was pasted with a trailing space/newline (a common
+  // cause of 401s from the provider).
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY.trim() });
   let ordered = false;
 
   try {
@@ -137,6 +144,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply: "", done: ordered });
   } catch (err) {
     const status = err instanceof Anthropic.APIError ? err.status || 500 : 500;
-    return res.status(status).json({ error: "assistant_error" });
+    // Surfaced in the Vercel function logs to make misconfig easy to diagnose.
+    console.error("assistant error:", status, err?.message);
+    const reason =
+      status === 401
+        ? "invalid_api_key"
+        : status === 429
+        ? "rate_limited"
+        : "assistant_error";
+    return res.status(200).json({ reply: ERROR_REPLY[lang], error: reason });
   }
 }
