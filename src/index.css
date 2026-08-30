@@ -118,36 +118,63 @@ input::placeholder {
   background: rgba(212, 175, 55, 0.04);
 }
 
-/* --- responsive: collapse the two-column layouts on small screens --- */
-@media (max-width: 860px) {
+/* ---------- responsive ---------- */
+
+/* tablets and below: single-column layouts, tighter padding */
+@media (max-width: 900px) {
   .mwoa-cols {
     grid-template-columns: 1fr !important;
-    gap: 48px !important;
+    gap: 44px !important;
   }
   .mwoa-nav-links {
     display: none !important;
   }
   .mwoa-hero {
-    padding: 120px 24px 70px !important;
-    text-align: center;
+    grid-template-columns: 1fr !important;
+    padding: 128px 24px 70px !important;
+    gap: 24px !important;
   }
   .mwoa-section {
-    padding: 80px 24px !important;
+    padding: 84px 24px !important;
   }
   .mwoa-gallery {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr 1fr !important;
     grid-template-rows: none !important;
   }
   .mwoa-gallery > div {
     grid-row: auto !important;
     grid-column: auto !important;
-    min-height: 160px;
+    min-height: 150px;
   }
-  .mwoa-testimonials {
+  .mwoa-footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px !important;
+  }
+}
+
+/* phones: stack everything, reduce chrome */
+@media (max-width: 560px) {
+  .mwoa-nav {
+    padding: 12px 18px !important;
+  }
+  .mwoa-hero {
+    padding: 110px 18px 56px !important;
+  }
+  .mwoa-section {
+    padding: 64px 18px !important;
+  }
+  .mwoa-cards {
+    grid-template-columns: 1fr !important;
+  }
+  .mwoa-gallery {
     grid-template-columns: 1fr !important;
   }
   .mwoa-footer-grid {
     grid-template-columns: 1fr !important;
-    gap: 40px !important;
+    gap: 32px !important;
+  }
+  .mwoa-marquee {
+    gap: 14px !important;
+    padding: 18px 16px !important;
   }
 }

@@ -13,20 +13,22 @@ const C = {
 const adminDigits = String(config.whatsapp).replace(/[^0-9]/g, "");
 
 /**
- * Order form modal. Collects quantity, full name, email and phone, then sends
- * the request to the admin via WhatsApp or email (client-side deep links —
- * the static site has no backend). Bilingual via the i18n context.
+ * Order form modal. Collects quantity, full name, email and phone. One submit
+ * button POSTs to /api/order, which sends the order to the admin over WhatsApp
+ * AND email automatically. If the backend isn't configured yet, it falls back
+ * to opening a pre-filled WhatsApp message to the admin — still one click, no
+ * channel choice for the customer.
  */
 export default function OrderModal({ open, onClose }) {
   const { t, fonts, dir } = useLang();
   const m = t.modal;
   const [form, setForm] = useState({ name: "", qty: "", email: "", phone: "" });
   const [errors, setErrors] = useState({});
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | sending | ok | fail
 
   useEffect(() => {
     if (open) {
-      setSent(false);
+      setStatus("idle");
       setErrors({});
     }
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -41,6 +43,7 @@ export default function OrderModal({ open, onClose }) {
   if (!open) return null;
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const lang = dir === "rtl" ? "ar" : "en";
 
   const validate = () => {
     const er = {};
@@ -55,22 +58,44 @@ export default function OrderModal({ open, onClose }) {
   const buildMessage = () =>
     [
       t.msg.head,
-      "────────────────",
+      "————————————————",
       `${t.msg.name}: ${form.name}`,
       `${t.msg.qty}: ${form.qty} ${t.msg.unit}`,
       `${t.msg.email}: ${form.email}`,
       `${t.msg.phone}: ${form.phone}`,
     ].join("\n");
 
-  const submit = (method) => {
+  const whatsappFallback = () => {
+    window.open(
+      `https://wa.me/${adminDigits}?text=${encodeURIComponent(buildMessage())}`,
+      "_blank",
+      "noopener"
+    );
+  };
+
+  const submit = async () => {
     if (!validate()) return;
-    const msg = buildMessage();
-    if (method === "whatsapp") {
-      window.open(`https://wa.me/${adminDigits}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
-    } else {
-      window.location.href = `mailto:${config.email}?subject=${encodeURIComponent(t.msg.subject)}&body=${encodeURIComponent(msg)}`;
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, qty: Number(form.qty), lang }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setStatus("ok"); // backend delivered to admin
+      } else if (data.configured === false) {
+        whatsappFallback(); // no channels configured yet → deep link
+        setStatus("ok");
+      } else {
+        setStatus("fail");
+      }
+    } catch {
+      // network/API unreachable → deep-link fallback so the order still lands
+      whatsappFallback();
+      setStatus("ok");
     }
-    setSent(true);
   };
 
   const field = (label, key, type = "text", placeholder = "", extra = {}) => (
@@ -112,6 +137,7 @@ export default function OrderModal({ open, onClose }) {
         background: "rgba(6,3,4,.82)",
         backdropFilter: "blur(6px)",
         animation: "mwoaFade .3s ease",
+        overflowY: "auto",
       }}
     >
       <div
@@ -126,27 +152,36 @@ export default function OrderModal({ open, onClose }) {
           padding: "38px 34px",
           borderRadius: 6,
           animation: "mwoaPop .35s cubic-bezier(.2,.8,.2,1)",
+          margin: "auto",
         }}
       >
         <button
           onClick={onClose}
           aria-label={m.close}
-          style={{
-            position: "absolute",
-            top: 14,
-            insetInlineStart: 16,
-            background: "transparent",
-            border: "none",
-            color: "#8d8578",
-            fontSize: 26,
-            cursor: "pointer",
-            lineHeight: 1,
-          }}
+          style={{ position: "absolute", top: 14, insetInlineStart: 16, background: "transparent", border: "none", color: "#8d8578", fontSize: 26, cursor: "pointer", lineHeight: 1 }}
         >
           ×
         </button>
 
-        {!sent ? (
+        {status === "ok" ? (
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ fontSize: 46, marginBottom: 10, color: C.gold }}>✓</div>
+            <h3 style={{ fontFamily: fonts.display, fontSize: 26, margin: "0 0 10px", color: C.paper, fontWeight: 400 }}>{m.okTitle}</h3>
+            <p style={{ fontSize: 15, color: C.body, lineHeight: 1.8, margin: "0 0 24px", fontFamily: fonts.ui }}>{m.okBody}</p>
+            <button onClick={onClose} className="btn-gold" style={{ padding: "12px 30px", background: "transparent", color: C.gold, fontSize: 14, border: "1px solid rgba(212,175,55,.5)", cursor: "pointer", fontFamily: fonts.ui, borderRadius: 4 }}>
+              {m.close}
+            </button>
+          </div>
+        ) : status === "fail" ? (
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ fontSize: 46, marginBottom: 10, color: "#e0562e" }}>!</div>
+            <h3 style={{ fontFamily: fonts.display, fontSize: 24, margin: "0 0 10px", color: C.paper, fontWeight: 400 }}>{m.failTitle}</h3>
+            <p style={{ fontSize: 15, color: C.body, lineHeight: 1.8, margin: "0 0 24px", fontFamily: fonts.ui }}>{m.failBody}</p>
+            <button onClick={() => setStatus("idle")} className="btn-ruby" style={{ padding: "13px 30px", background: C.ruby, color: "#FFE9A8", fontSize: 15, fontWeight: 700, border: "1px solid rgba(255,184,0,.4)", cursor: "pointer", fontFamily: fonts.ui, borderRadius: 4 }}>
+              {m.retry}
+            </button>
+          </div>
+        ) : (
           <>
             <div style={{ fontFamily: C.mono, fontSize: 10.5, letterSpacing: ".2em", color: "#ff2d2d", marginBottom: 12 }}>{m.eyebrow}</div>
             <h3 style={{ fontFamily: fonts.display, fontSize: 30, margin: "0 0 6px", color: C.paper, fontWeight: 400 }}>{m.title}</h3>
@@ -159,36 +194,28 @@ export default function OrderModal({ open, onClose }) {
               {field(m.phone, "phone", "tel", m.phonePh, { inputMode: "tel" })}
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 28 }}>
-              <button
-                onClick={() => submit("whatsapp")}
-                className="btn-ruby"
-                style={{ padding: "15px 20px", background: C.ruby, color: "#FFE9A8", fontSize: 15, fontWeight: 700, border: "1px solid rgba(255,184,0,.4)", cursor: "pointer", fontFamily: fonts.ui, borderRadius: 4 }}
-              >
-                {m.sendWa}
-              </button>
-              <button
-                onClick={() => submit("email")}
-                className="btn-gold"
-                style={{ padding: "15px 20px", background: "transparent", color: C.gold, fontSize: 15, fontWeight: 700, border: "1px solid rgba(212,175,55,.5)", cursor: "pointer", fontFamily: fonts.ui, borderRadius: 4 }}
-              >
-                {m.sendMail}
-              </button>
-            </div>
-          </>
-        ) : (
-          <div style={{ textAlign: "center", padding: "16px 0" }}>
-            <div style={{ fontSize: 46, marginBottom: 10, color: C.gold }}>✓</div>
-            <h3 style={{ fontFamily: fonts.display, fontSize: 26, margin: "0 0 10px", color: C.paper, fontWeight: 400 }}>{m.okTitle}</h3>
-            <p style={{ fontSize: 15, color: C.body, lineHeight: 1.8, margin: "0 0 24px", fontFamily: fonts.ui }}>{m.okBody}</p>
             <button
-              onClick={onClose}
-              className="btn-gold"
-              style={{ padding: "12px 30px", background: "transparent", color: C.gold, fontSize: 14, border: "1px solid rgba(212,175,55,.5)", cursor: "pointer", fontFamily: fonts.ui, borderRadius: 4 }}
+              onClick={submit}
+              disabled={status === "sending"}
+              className="btn-ruby"
+              style={{
+                marginTop: 28,
+                width: "100%",
+                padding: "16px 20px",
+                background: C.ruby,
+                color: "#FFE9A8",
+                fontSize: 16,
+                fontWeight: 700,
+                border: "1px solid rgba(255,184,0,.4)",
+                cursor: status === "sending" ? "default" : "pointer",
+                fontFamily: fonts.ui,
+                borderRadius: 4,
+                opacity: status === "sending" ? 0.7 : 1,
+              }}
             >
-              {m.close}
+              {status === "sending" ? m.sending : m.send}
             </button>
-          </div>
+          </>
         )}
       </div>
     </div>

@@ -5,6 +5,7 @@ import { config } from "./config.js";
 import { LangProvider, useLang } from "./i18n.jsx";
 import ProductModel3D from "./components/ProductModel3D.jsx";
 import OrderModal from "./components/OrderModal.jsx";
+import Assistant from "./components/Assistant.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -51,6 +52,7 @@ function Nav({ onOrder }) {
   const { t, fonts } = useLang();
   return (
     <div
+      className="mwoa-nav"
       style={{
         position: "fixed",
         top: 0,
@@ -79,12 +81,14 @@ function Nav({ onOrder }) {
           </span>
         </div>
       </div>
-      <div className="mwoa-nav-links" style={{ display: "flex", alignItems: "center", gap: 26 }}>
-        {t.nav.links.map(([href, label]) => (
-          <a key={href} href={href} className="nav-link" style={{ fontSize: 14, color: "#b8b0a2", fontFamily: fonts.ui }}>
-            {label}
-          </a>
-        ))}
+      <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
+        <div className="mwoa-nav-links" style={{ display: "flex", alignItems: "center", gap: 26 }}>
+          {t.nav.links.map(([href, label]) => (
+            <a key={href} href={href} className="nav-link" style={{ fontSize: 14, color: "#b8b0a2", fontFamily: fonts.ui }}>
+              {label}
+            </a>
+          ))}
+        </div>
         <LangToggle />
         <button
           onClick={onOrder}
@@ -98,6 +102,7 @@ function Nav({ onOrder }) {
             border: "1px solid rgba(255,184,0,.35)",
             cursor: "pointer",
             fontFamily: fonts.ui,
+            whiteSpace: "nowrap",
           }}
         >
           {t.nav.order}
@@ -142,7 +147,7 @@ function Hero({ onOrder }) {
         <h1
           style={{
             fontFamily: fonts.display,
-            fontSize: lang === "ar" ? 96 : 84,
+            fontSize: lang === "ar" ? "clamp(3.4rem, 11vw, 6rem)" : "clamp(2.6rem, 8.5vw, 5.25rem)",
             lineHeight: 1.05,
             margin: 0,
             color: C.paper,
@@ -153,11 +158,11 @@ function Hero({ onOrder }) {
           {t.hero.title}
         </h1>
         {t.hero.accent && (
-          <p style={{ fontFamily: "Amiri, serif", fontSize: 40, margin: "8px 0 0", color: C.amber, direction: "rtl" }}>
+          <p style={{ fontFamily: "Amiri, serif", fontSize: "clamp(1.5rem, 5vw, 2.5rem)", margin: "8px 0 0", color: C.amber, direction: "rtl" }}>
             {t.hero.accent}
           </p>
         )}
-        <p style={{ fontFamily: fonts.ui, fontSize: 20, lineHeight: 1.9, color: C.body, margin: "22px 0 0", maxWidth: 540 }}>
+        <p style={{ fontFamily: fonts.ui, fontSize: "clamp(1rem, 2.6vw, 1.25rem)", lineHeight: 1.9, color: C.body, margin: "22px 0 0", maxWidth: 540 }}>
           {t.hero.desc}
         </p>
         <div style={{ marginTop: 40, paddingTop: 30, borderTop: "1px solid rgba(212,175,55,.25)" }}>
@@ -217,6 +222,7 @@ function Marquee() {
   const { t, fonts } = useLang();
   return (
     <div
+      className="mwoa-marquee"
       style={{
         display: "flex",
         alignItems: "center",
@@ -255,7 +261,7 @@ function useH2() {
   const { fonts, lang } = useLang();
   return {
     fontFamily: fonts.display,
-    fontSize: 46,
+    fontSize: "clamp(1.9rem, 5.2vw, 2.9rem)",
     lineHeight: 1.3,
     margin: 0,
     color: C.paper,
@@ -279,7 +285,7 @@ function WhatIs() {
         </div>
         <div>
           <p style={{ fontSize: 21, lineHeight: 2, color: "#d5cdbd", margin: 0, fontFamily: fonts.ui }}>{t.what.body}</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, marginTop: 52, background: "rgba(153,0,0,.55)" }}>
+          <div className="mwoa-cards" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, marginTop: 52, background: "rgba(153,0,0,.55)" }}>
             {t.what.cards.map(([title, text]) => (
               <div key={title} style={{ background: "linear-gradient(160deg,#2a0e10,#1a0c0d)", padding: "28px 24px", borderTop: "2px solid #990000" }}>
                 <div style={{ fontFamily: fonts.display, fontSize: 28, fontWeight: 700, color: C.amber }}>{title}</div>
@@ -399,7 +405,7 @@ function Order({ onOrder }) {
     <section id="buy" className="mwoa-section" style={{ padding: "120px 60px", background: "radial-gradient(1000px 620px at 50% 0%, #8a0000 0%, #3a0507 34%, #120b0c 72%)" }}>
       <div className="reveal" style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
         <SectionLabel>{t.order.label}</SectionLabel>
-        <h2 style={{ ...h2, fontSize: 54 }}>{t.order.h2}</h2>
+        <h2 style={{ ...h2, fontSize: "clamp(2.1rem, 6vw, 3.4rem)" }}>{t.order.h2}</h2>
         <p style={{ fontSize: 18, lineHeight: 2, color: C.body, maxWidth: 640, margin: "28px auto 0", fontFamily: fonts.ui }}>{t.order.body}</p>
         <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 44, flexWrap: "wrap" }}>
           <button
@@ -411,33 +417,6 @@ function Order({ onOrder }) {
           </button>
         </div>
         <div style={{ fontFamily: fonts.ui, fontSize: 13, letterSpacing: ".04em", color: "#7d7466", marginTop: 22 }}>{t.order.note}</div>
-      </div>
-    </section>
-  );
-}
-
-function Testimonials() {
-  const { t, fonts } = useLang();
-  const h2 = useH2();
-  if (!config.showTestimonials) return null;
-  return (
-    <section className="mwoa-section" style={{ padding: "110px 60px", background: "#0f0809", borderTop: "1px solid rgba(153,0,0,.5)" }}>
-      <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 44, flexWrap: "wrap" }}>
-          <div>
-            <SectionLabel>{t.testi.label}</SectionLabel>
-            <h2 style={h2}>{t.testi.h2}</h2>
-          </div>
-          <p style={{ fontFamily: fonts.ui, fontSize: 14, lineHeight: 1.8, color: "#7d7466", maxWidth: 320, margin: 0 }}>{t.testi.note}</p>
-        </div>
-        <div className="mwoa-testimonials" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, background: "rgba(153,0,0,.55)" }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} style={{ background: "#180a0b", padding: "34px 30px", minHeight: 200, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: fonts.display, fontSize: 20, lineHeight: 1.9, color: "#6a6459" }}>{t.testi.quote}</span>
-              <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#4f4a42" }}>{t.testi.who}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -549,10 +528,10 @@ function AppInner() {
       <Gallery />
       <Authenticity />
       <Order onOrder={openModal} />
-      <Testimonials />
       <Faq />
       <Footer />
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <Assistant onOrder={openModal} />
     </div>
   );
 }
