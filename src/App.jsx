@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { config, faqs } from "./config.js";
+import { config } from "./config.js";
+import { LangProvider, useLang } from "./i18n.jsx";
 import ProductModel3D from "./components/ProductModel3D.jsx";
 import OrderModal from "./components/OrderModal.jsx";
 
@@ -15,12 +16,39 @@ const C = {
   body: "#c3bbab",
   ink: "#0b0708",
   mono: "'IBM Plex Mono', monospace",
-  serif: "Marcellus, serif",
-  arabic: "Amiri, serif",
-  ui: "Tajawal, Karla, system-ui, sans-serif",
+  brand: "Marcellus, serif",
 };
 
+function LangToggle() {
+  const { setLang, t, lang } = useLang();
+  return (
+    <button
+      onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+      aria-label="Switch language"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "8px 14px",
+        background: "transparent",
+        border: "1px solid rgba(212,175,55,.4)",
+        color: C.gold,
+        fontSize: 13,
+        fontWeight: 700,
+        letterSpacing: ".08em",
+        cursor: "pointer",
+        borderRadius: 3,
+        fontFamily: C.mono,
+      }}
+    >
+      <span aria-hidden>🌐</span>
+      {t.other}
+    </button>
+  );
+}
+
 function Nav({ onOrder }) {
+  const { t, fonts } = useLang();
   return (
     <div
       style={{
@@ -32,7 +60,7 @@ function Nav({ onOrder }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: 24,
+        gap: 20,
         padding: "14px 40px",
         background: "rgba(14,7,8,.86)",
         backdropFilter: "blur(14px)",
@@ -41,54 +69,23 @@ function Nav({ onOrder }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <img
-          src="/assets/whale.png"
-          alt="MWOA"
-          style={{ height: 26, width: "auto", display: "block" }}
-        />
+        <img src="/assets/whale.png" alt="MWOA" style={{ height: 26, width: "auto", display: "block" }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          <span
-            style={{
-              fontFamily: C.serif,
-              fontSize: 19,
-              letterSpacing: ".28em",
-              color: C.gold,
-              lineHeight: 1,
-            }}
-          >
+          <span style={{ fontFamily: C.brand, fontSize: 19, letterSpacing: ".28em", color: C.gold, lineHeight: 1 }}>
             MWOA
           </span>
-          <span
-            style={{
-              fontFamily: C.mono,
-              fontSize: 8.5,
-              letterSpacing: ".2em",
-              color: "#7d7466",
-            }}
-          >
-            عنبر الحوت · المغرب
+          <span style={{ fontFamily: C.mono, fontSize: 8.5, letterSpacing: ".2em", color: "#7d7466" }}>
+            {t.nav.brandSub}
           </span>
         </div>
       </div>
-      <div
-        className="mwoa-nav-links"
-        style={{ display: "flex", alignItems: "center", gap: 30 }}
-      >
-        {[
-          ["#what", "المنتج"],
-          ["#origin", "الأصل"],
-          ["#proof", "الأصالة"],
-          ["#faq", "الأسئلة"],
-        ].map(([href, label]) => (
-          <a
-            key={href}
-            href={href}
-            className="nav-link"
-            style={{ fontSize: 14, color: "#b8b0a2", fontFamily: C.ui }}
-          >
+      <div className="mwoa-nav-links" style={{ display: "flex", alignItems: "center", gap: 26 }}>
+        {t.nav.links.map(([href, label]) => (
+          <a key={href} href={href} className="nav-link" style={{ fontSize: 14, color: "#b8b0a2", fontFamily: fonts.ui }}>
             {label}
           </a>
         ))}
+        <LangToggle />
         <button
           onClick={onOrder}
           className="btn-ruby"
@@ -98,13 +95,12 @@ function Nav({ onOrder }) {
             color: "#FFE9A8",
             fontSize: 14,
             fontWeight: 700,
-            letterSpacing: ".02em",
             border: "1px solid rgba(255,184,0,.35)",
             cursor: "pointer",
-            fontFamily: C.ui,
+            fontFamily: fonts.ui,
           }}
         >
-          اطلب الآن
+          {t.nav.order}
         </button>
       </div>
     </div>
@@ -112,6 +108,7 @@ function Nav({ onOrder }) {
 }
 
 function Hero({ onOrder }) {
+  const { t, fonts, lang } = useLang();
   return (
     <section
       className="mwoa-hero"
@@ -131,127 +128,65 @@ function Hero({ onOrder }) {
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "repeating-linear-gradient(90deg,rgba(153,0,0,.16) 0 1px,transparent 1px 88px)",
+          background: "repeating-linear-gradient(90deg,rgba(153,0,0,.16) 0 1px,transparent 1px 88px)",
           pointerEvents: "none",
         }}
       />
       <div className="hero-copy" style={{ position: "relative", maxWidth: 640 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 30,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 30 }}>
           <span style={{ width: 44, height: 1, background: C.gold, display: "block" }} />
-          <span
-            style={{
-              fontFamily: C.mono,
-              fontSize: 11,
-              letterSpacing: ".24em",
-              color: C.gold,
-            }}
-          >
-            منتج واحد · مادة واحدة
+          <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".24em", color: C.gold }}>
+            {t.hero.eyebrow}
           </span>
         </div>
         <h1
           style={{
-            fontFamily: C.arabic,
-            fontSize: 96,
+            fontFamily: fonts.display,
+            fontSize: lang === "ar" ? 96 : 84,
             lineHeight: 1.05,
             margin: 0,
             color: C.paper,
-            fontWeight: 700,
+            fontWeight: lang === "ar" ? 700 : 400,
             textShadow: "0 0 42px rgba(190,0,0,.85)",
           }}
         >
-          عنبر الحوت
+          {t.hero.title}
         </h1>
-        <p
-          style={{
-            fontFamily: C.ui,
-            fontSize: 20,
-            lineHeight: 1.9,
-            color: C.body,
-            margin: "22px 0 0",
-            maxWidth: 540,
-          }}
-        >
-          مادة نادرة تتكوّن طبيعياً، مرتبطة تقليدياً بحوت العنبر — تُستعمل في صناعة
-          العطور الفاخرة لرائحتها المميّزة وقدرتها على إطالة ثبات العطر.
+        {t.hero.accent && (
+          <p style={{ fontFamily: "Amiri, serif", fontSize: 40, margin: "8px 0 0", color: C.amber, direction: "rtl" }}>
+            {t.hero.accent}
+          </p>
+        )}
+        <p style={{ fontFamily: fonts.ui, fontSize: 20, lineHeight: 1.9, color: C.body, margin: "22px 0 0", maxWidth: 540 }}>
+          {t.hero.desc}
         </p>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 34,
-            margin: "40px 0 0",
-            paddingTop: 30,
-            borderTop: "1px solid rgba(212,175,55,.25)",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: C.mono,
-                fontSize: 10,
-                letterSpacing: ".2em",
-                color: "#7d7466",
-                marginBottom: 8,
-              }}
-            >
-              السعر
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span
-                style={{ fontFamily: C.serif, fontSize: 50, color: C.amber, lineHeight: 1 }}
-              >
-                {config.price}
-              </span>
-              <span style={{ fontFamily: C.serif, fontSize: 20, color: C.gold }}>درهم</span>
-              <span style={{ fontSize: 14, color: "#8d8578", fontFamily: C.ui }}>/ غرام</span>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 12, paddingBottom: 4 }}>
-            <button
-              onClick={onOrder}
-              className="btn-ruby"
-              style={{
-                padding: "15px 34px",
-                background: C.ruby,
-                color: "#FFE9A8",
-                fontSize: 15,
-                fontWeight: 700,
-                border: "1px solid rgba(255,184,0,.4)",
-                cursor: "pointer",
-                fontFamily: C.ui,
-              }}
-            >
-              اطلب الآن
-            </button>
-          </div>
+        <div style={{ marginTop: 40, paddingTop: 30, borderTop: "1px solid rgba(212,175,55,.25)" }}>
+          <button
+            onClick={onOrder}
+            className="btn-ruby"
+            style={{
+              padding: "16px 40px",
+              background: C.ruby,
+              color: "#FFE9A8",
+              fontSize: 16,
+              fontWeight: 700,
+              border: "1px solid rgba(255,184,0,.4)",
+              cursor: "pointer",
+              fontFamily: fonts.ui,
+            }}
+          >
+            {t.hero.cta}
+          </button>
         </div>
       </div>
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
         <div
           style={{
             position: "absolute",
             width: "82%",
             aspectRatio: "1",
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle,rgba(190,0,0,.7),rgba(255,120,20,.22) 40%,transparent 68%)",
+            background: "radial-gradient(circle,rgba(190,0,0,.7),rgba(255,120,20,.22) 40%,transparent 68%)",
             animation: "mwoaGlow 6s ease-in-out infinite",
             pointerEvents: "none",
           }}
@@ -271,7 +206,7 @@ function Hero({ onOrder }) {
             whiteSpace: "nowrap",
           }}
         >
-          ↺ اسحب للتدوير
+          {t.hero.drag}
         </span>
       </div>
     </section>
@@ -279,7 +214,7 @@ function Hero({ onOrder }) {
 }
 
 function Marquee() {
-  const items = ["طبيعي", "وزن يدوي", "قطعة فريدة", "تغليف محكم"];
+  const { t, fonts } = useLang();
   return (
     <div
       style={{
@@ -294,29 +229,13 @@ function Marquee() {
         flexWrap: "wrap",
       }}
     >
-      {items.map((label, i) => (
+      {t.marquee.map((label, i) => (
         <span key={label} style={{ display: "contents" }}>
-          <span
-            style={{
-              fontFamily: C.ui,
-              fontSize: 14,
-              fontWeight: 500,
-              letterSpacing: ".04em",
-              color: "#FFE9A8",
-            }}
-          >
+          <span style={{ fontFamily: fonts.ui, fontSize: 14, fontWeight: 500, letterSpacing: ".04em", color: "#FFE9A8" }}>
             {label}
           </span>
-          {i < items.length - 1 && (
-            <span
-              style={{
-                width: 5,
-                height: 5,
-                background: C.ink,
-                display: "block",
-                transform: "rotate(45deg)",
-              }}
-            />
+          {i < t.marquee.length - 1 && (
+            <span style={{ width: 5, height: 5, background: C.ink, display: "block", transform: "rotate(45deg)" }} />
           )}
         </span>
       ))}
@@ -326,86 +245,45 @@ function Marquee() {
 
 function SectionLabel({ children }) {
   return (
-    <div
-      style={{
-        fontFamily: C.mono,
-        fontSize: 11,
-        letterSpacing: ".2em",
-        color: "#ff2d2d",
-        marginBottom: 20,
-      }}
-    >
+    <div style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".2em", color: "#ff2d2d", marginBottom: 20 }}>
       {children}
     </div>
   );
 }
 
-const h2Style = {
-  fontFamily: C.arabic,
-  fontSize: 46,
-  lineHeight: 1.3,
-  margin: 0,
-  color: C.paper,
-  fontWeight: 700,
-};
+function useH2() {
+  const { fonts, lang } = useLang();
+  return {
+    fontFamily: fonts.display,
+    fontSize: 46,
+    lineHeight: 1.3,
+    margin: 0,
+    color: C.paper,
+    fontWeight: lang === "ar" ? 700 : 400,
+  };
+}
 
 function WhatIs() {
-  const cards = [
-    ["طبيعي", "يتكوّن في البحر، لا يُصنّع. لا يُضاف إليه شيء."],
-    ["للعطور", "مثبّت عطري: يُبقي الرائحة على البشرة مدة أطول بكثير."],
-    ["فريد", "اللون والملمس والشكل والرائحة تختلف من قطعة لأخرى."],
-  ];
+  const { t, fonts } = useLang();
+  const h2 = useH2();
   return (
     <section id="what" className="mwoa-section" style={{ padding: "120px 60px", background: "#120b0c" }}>
       <div
         className="mwoa-cols reveal"
-        style={{
-          maxWidth: 1180,
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: ".85fr 1.15fr",
-          gap: 80,
-        }}
+        style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: ".85fr 1.15fr", gap: 80 }}
       >
         <div>
-          <SectionLabel>٠١ — ما هو</SectionLabel>
-          <h2 style={h2Style}>ما هو عنبر الحوت حقًّا</h2>
-          <img
-            src="/assets/flourish.png"
-            alt=""
-            style={{ width: 190, marginTop: 34, display: "block", opacity: 0.9 }}
-          />
+          <SectionLabel>{t.what.label}</SectionLabel>
+          <h2 style={h2}>{t.what.h2}</h2>
+          <img src="/assets/flourish.png" alt="" style={{ width: 190, marginTop: 34, display: "block", opacity: 0.9 }} />
         </div>
         <div>
-          <p style={{ fontSize: 21, lineHeight: 2, color: "#d5cdbd", margin: 0, fontFamily: C.ui }}>
-            عنبر الحوت مادة نادرة تتكوّن طبيعياً، مرتبطة تقليدياً بحوت العنبر. وهي
-            مادة عطرية ثمينة تُستعمل أساساً في صناعة العطور الفاخرة لرائحتها المميّزة
-            وقدرتها على إطالة ثبات العطر. كل قطعة فريدة في لونها وملمسها وشكلها ورائحتها.
-          </p>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3,1fr)",
-              gap: 2,
-              marginTop: 52,
-              background: "rgba(153,0,0,.55)",
-            }}
-          >
-            {cards.map(([title, text]) => (
-              <div
-                key={title}
-                style={{
-                  background: "linear-gradient(160deg,#2a0e10,#1a0c0d)",
-                  padding: "28px 24px",
-                  borderTop: "2px solid #990000",
-                }}
-              >
-                <div style={{ fontFamily: C.arabic, fontSize: 28, fontWeight: 700, color: C.amber }}>
-                  {title}
-                </div>
-                <div style={{ fontSize: 15, lineHeight: 1.9, color: "#a9a193", marginTop: 10, fontFamily: C.ui }}>
-                  {text}
-                </div>
+          <p style={{ fontSize: 21, lineHeight: 2, color: "#d5cdbd", margin: 0, fontFamily: fonts.ui }}>{t.what.body}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, marginTop: 52, background: "rgba(153,0,0,.55)" }}>
+            {t.what.cards.map(([title, text]) => (
+              <div key={title} style={{ background: "linear-gradient(160deg,#2a0e10,#1a0c0d)", padding: "28px 24px", borderTop: "2px solid #990000" }}>
+                <div style={{ fontFamily: fonts.display, fontSize: 28, fontWeight: 700, color: C.amber }}>{title}</div>
+                <div style={{ fontSize: 15, lineHeight: 1.9, color: "#a9a193", marginTop: 10, fontFamily: fonts.ui }}>{text}</div>
               </div>
             ))}
           </div>
@@ -416,41 +294,22 @@ function WhatIs() {
 }
 
 function Origin() {
+  const { t, fonts } = useLang();
+  const h2 = useH2();
   return (
-    <section
-      id="origin"
-      className="mwoa-section"
-      style={{ padding: "120px 60px", background: "linear-gradient(180deg,#0b0708,#1c0a0b)" }}
-    >
+    <section id="origin" className="mwoa-section" style={{ padding: "120px 60px", background: "linear-gradient(180deg,#0b0708,#1c0a0b)" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <SectionLabel>٠٢ — الأصل</SectionLabel>
-        <div
-          className="mwoa-cols"
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }}
-        >
-          <h2 style={h2Style}>يُجمع من الشاطئ، لا يُؤخذ من البحر</h2>
+        <SectionLabel>{t.origin.label}</SectionLabel>
+        <div className="mwoa-cols" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }}>
+          <h2 style={h2}>{t.origin.h2}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-            <p style={{ fontSize: 17, lineHeight: 2, color: C.body, margin: 0, fontFamily: C.ui }}>
-              يُجمع العنبر حيث يتركه المحيط — على طول الساحل، بعد سنوات من التنقّل في
-              الماء. الوقت في ماء البحر وتحت الشمس هو ما يمنح كل قطعة لونها ورائحتها؛
-              فالقطعة الطازجة والقطعة المُعتّقة ليستا المادة نفسها.
-            </p>
-            <p style={{ fontSize: 17, lineHeight: 2, color: C.body, margin: 0, fontFamily: C.ui }}>
-              كل قطعة تُباع هنا تُفحص يدوياً، وتُوزن أمام طلب المشتري، وتُرسل مختومة.
-              وإذا لم تبلغ القطعة المعيار المطلوب، فلا تُعرض للبيع.
-            </p>
+            <p style={{ fontSize: 17, lineHeight: 2, color: C.body, margin: 0, fontFamily: fonts.ui }}>{t.origin.p1}</p>
+            <p style={{ fontSize: 17, lineHeight: 2, color: C.body, margin: 0, fontFamily: fonts.ui }}>{t.origin.p2}</p>
             <div style={{ display: "flex", gap: 2, marginTop: 14, background: "rgba(153,0,0,.55)" }}>
-              {[
-                ["الجمع", "الساحل الأطلسي"],
-                ["المراقبة", "قطعة بقطعة"],
-              ].map(([k, v]) => (
+              {t.origin.boxes.map(([k, v]) => (
                 <div key={k} style={{ background: "#1a0c0d", padding: "20px 26px", flex: 1 }}>
-                  <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".16em", color: "#7d7466" }}>
-                    {k}
-                  </div>
-                  <div style={{ fontFamily: C.arabic, fontSize: 22, fontWeight: 700, color: C.paper, marginTop: 6 }}>
-                    {v}
-                  </div>
+                  <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".16em", color: "#7d7466" }}>{k}</div>
+                  <div style={{ fontFamily: fonts.display, fontSize: 22, fontWeight: 700, color: C.paper, marginTop: 6 }}>{v}</div>
                 </div>
               ))}
             </div>
@@ -462,48 +321,25 @@ function Origin() {
 }
 
 function Gallery() {
-  const slots = [
-    { label: "الصورة الرئيسية · القطعة في اليد", style: { gridRow: "span 2" } },
-    { label: "تكبير · الملمس", style: {} },
-    { label: "الميزان · الوزن", style: {} },
-    { label: "التغليف المحكم · قبل الإرسال", style: { gridColumn: "span 2" } },
-  ];
+  const { t, fonts } = useLang();
+  const h2 = useH2();
+  const spans = [{ gridRow: "span 2" }, {}, {}, { gridColumn: "span 2" }];
   return (
     <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#0f0809" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            gap: 40,
-            marginBottom: 40,
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 40, flexWrap: "wrap" }}>
           <div>
-            <SectionLabel>٠٣ — المعرض</SectionLabel>
-            <h2 style={h2Style}>القطع</h2>
+            <SectionLabel>{t.gallery.label}</SectionLabel>
+            <h2 style={h2}>{t.gallery.h2}</h2>
           </div>
-          <p style={{ fontFamily: C.ui, fontSize: 14, lineHeight: 1.8, color: "#7d7466", maxWidth: 320, margin: 0 }}>
-            ضع صورك الحقيقية في هذه الخانات الأربع — صور المخزون الحقيقي تبيع أكثر من أي وصف.
-          </p>
+          <p style={{ fontFamily: fonts.ui, fontSize: 14, lineHeight: 1.8, color: "#7d7466", maxWidth: 320, margin: 0 }}>{t.gallery.note}</p>
         </div>
-        <div
-          className="mwoa-gallery"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr",
-            gridTemplateRows: "200px 200px",
-            gap: 2,
-            background: "rgba(153,0,0,.55)",
-          }}
-        >
-          {slots.map((s) => (
+        <div className="mwoa-gallery" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gridTemplateRows: "200px 200px", gap: 2, background: "rgba(153,0,0,.55)" }}>
+          {t.gallery.slots.map((label, i) => (
             <div
-              key={s.label}
+              key={label}
               style={{
-                ...s.style,
+                ...spans[i],
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -511,17 +347,7 @@ function Gallery() {
                 border: "1px solid rgba(153,0,0,.45)",
               }}
             >
-              <span
-                style={{
-                  fontFamily: C.ui,
-                  fontSize: 14,
-                  color: "#8d8578",
-                  padding: "0 12px",
-                  textAlign: "center",
-                }}
-              >
-                {s.label}
-              </span>
+              <span style={{ fontFamily: fonts.ui, fontSize: 14, color: "#8d8578", padding: "0 12px", textAlign: "center" }}>{label}</span>
             </div>
           ))}
         </div>
@@ -531,84 +357,33 @@ function Gallery() {
 }
 
 function Authenticity() {
-  const points = [
-    "كل طلب يُوزن على ميزان مُعاير ويُصوّر أثناء التغليف.",
-    "بطاقة موقّعة ترافق القطعة: الوزن والتاريخ والأصل.",
-    "اختبار الحرق واختبار الرائحة يُشرحان قبل الشراء، لا بعده.",
-  ];
+  const { t, fonts } = useLang();
+  const h2 = useH2();
   return (
-    <section
-      id="proof"
-      className="mwoa-section"
-      style={{ padding: "120px 60px", background: "#120b0c", borderTop: "1px solid rgba(153,0,0,.5)" }}
-    >
-      <div
-        className="mwoa-cols reveal"
-        style={{
-          maxWidth: 1180,
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 70,
-          alignItems: "center",
-        }}
-      >
+    <section id="proof" className="mwoa-section" style={{ padding: "120px 60px", background: "#120b0c", borderTop: "1px solid rgba(153,0,0,.5)" }}>
+      <div className="mwoa-cols reveal" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 70, alignItems: "center" }}>
         <div>
-          <SectionLabel>٠٤ — الأصالة</SectionLabel>
-          <h2 style={h2Style}>موزون، مختوم، موثّق</h2>
+          <SectionLabel>{t.proof.label}</SectionLabel>
+          <h2 style={h2}>{t.proof.h2}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 34 }}>
-            {points.map((p) => (
+            {t.proof.points.map((p) => (
               <div key={p} style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                <span
-                  style={{
-                    width: 7,
-                    height: 7,
-                    background: C.ruby,
-                    display: "block",
-                    marginTop: 10,
-                    transform: "rotate(45deg)",
-                    flex: "none",
-                  }}
-                />
-                <span style={{ fontSize: 17, lineHeight: 1.9, color: C.body, fontFamily: C.ui }}>{p}</span>
+                <span style={{ width: 7, height: 7, background: C.ruby, display: "block", marginTop: 10, transform: "rotate(45deg)", flex: "none" }} />
+                <span style={{ fontSize: 17, lineHeight: 1.9, color: C.body, fontFamily: fonts.ui }}>{p}</span>
               </div>
             ))}
           </div>
         </div>
-        <div
-          style={{
-            position: "relative",
-            padding: 44,
-            border: "1px solid rgba(212,175,55,.45)",
-            background: "linear-gradient(150deg,#3a0507,#120b0c)",
-          }}
-        >
+        <div style={{ position: "relative", padding: 44, border: "1px solid rgba(212,175,55,.45)", background: "linear-gradient(150deg,#3a0507,#120b0c)" }}>
           <div style={{ position: "absolute", inset: 10, border: "1px solid rgba(212,175,55,.18)", pointerEvents: "none" }} />
           <div style={{ position: "relative", textAlign: "center" }}>
             <img src="/assets/whale.png" alt="" style={{ width: 120, display: "block", margin: "0 auto 22px" }} />
-            <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".22em", color: C.gold }}>
-              شهادة أصالة
-            </div>
-            <div style={{ fontFamily: C.arabic, fontSize: 36, fontWeight: 700, color: C.paper, margin: "14px 0 6px" }}>
-              عنبر الحوت
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 20,
-                marginTop: 34,
-                paddingTop: 22,
-                borderTop: "1px solid rgba(212,175,55,.25)",
-                fontFamily: C.mono,
-                fontSize: 11,
-                letterSpacing: ".1em",
-                color: "#8d8578",
-              }}
-            >
-              <span>الوزن ____ غ</span>
-              <span>التاريخ ____</span>
-              <span>المرجع ____</span>
+            <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".22em", color: C.gold }}>{t.proof.certLabel}</div>
+            <div style={{ fontFamily: fonts.display, fontSize: 36, fontWeight: 700, color: C.paper, margin: "14px 0 6px" }}>{t.proof.certTitle}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 20, marginTop: 34, paddingTop: 22, borderTop: "1px solid rgba(212,175,55,.25)", fontFamily: C.mono, fontSize: 11, letterSpacing: ".1em", color: "#8d8578" }}>
+              {t.proof.cert.map((c) => (
+                <span key={c}>{c}</span>
+              ))}
             </div>
           </div>
         </div>
@@ -618,110 +393,48 @@ function Authenticity() {
 }
 
 function Order({ onOrder }) {
+  const { t, fonts } = useLang();
+  const h2 = useH2();
   return (
-    <section
-      id="buy"
-      className="mwoa-section"
-      style={{
-        padding: "120px 60px",
-        background: "radial-gradient(1000px 620px at 50% 0%, #8a0000 0%, #3a0507 34%, #120b0c 72%)",
-      }}
-    >
+    <section id="buy" className="mwoa-section" style={{ padding: "120px 60px", background: "radial-gradient(1000px 620px at 50% 0%, #8a0000 0%, #3a0507 34%, #120b0c 72%)" }}>
       <div className="reveal" style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
-        <SectionLabel>٠٥ — اطلب</SectionLabel>
-        <h2 style={{ ...h2Style, fontSize: 54 }}>اطلب بالغرام</h2>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 10, margin: "36px 0 0" }}>
-          <span style={{ fontFamily: C.serif, fontSize: 96, color: C.amber, lineHeight: 1 }}>{config.price}</span>
-          <span style={{ fontFamily: C.serif, fontSize: 30, color: C.gold }}>درهم</span>
-          <span style={{ fontSize: 17, color: "#8d8578", fontFamily: C.ui }}>/ غرام</span>
-        </div>
-        <p
-          style={{
-            fontSize: 18,
-            lineHeight: 2,
-            color: C.body,
-            maxWidth: 640,
-            margin: "28px auto 0",
-            fontFamily: C.ui,
-          }}
-        >
-          يحصل المشتري على عنبر حوت أصلي، موزون بعناية ومغلّف بإحكام. كل قطعة فريدة في
-          حجمها ولونها وملمسها ورائحتها. الكمية المُستلمة تطابق الكمية المطلوبة تماماً.
-        </p>
+        <SectionLabel>{t.order.label}</SectionLabel>
+        <h2 style={{ ...h2, fontSize: 54 }}>{t.order.h2}</h2>
+        <p style={{ fontSize: 18, lineHeight: 2, color: C.body, maxWidth: 640, margin: "28px auto 0", fontFamily: fonts.ui }}>{t.order.body}</p>
         <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 44, flexWrap: "wrap" }}>
           <button
             onClick={onOrder}
             className="btn-ruby"
-            style={{
-              padding: "18px 48px",
-              background: C.ruby,
-              color: "#FFE9A8",
-              fontSize: 16,
-              fontWeight: 700,
-              border: "1px solid rgba(255,184,0,.4)",
-              cursor: "pointer",
-              fontFamily: C.ui,
-            }}
+            style={{ padding: "18px 48px", background: C.ruby, color: "#FFE9A8", fontSize: 16, fontWeight: 700, border: "1px solid rgba(255,184,0,.4)", cursor: "pointer", fontFamily: fonts.ui }}
           >
-            اطلب الآن
+            {t.order.cta}
           </button>
         </div>
-        <div style={{ fontFamily: C.ui, fontSize: 13, letterSpacing: ".04em", color: "#7d7466", marginTop: 22 }}>
-          أخبرنا بالوزن المطلوب · رد خلال ٢٤ ساعة
-        </div>
+        <div style={{ fontFamily: fonts.ui, fontSize: 13, letterSpacing: ".04em", color: "#7d7466", marginTop: 22 }}>{t.order.note}</div>
       </div>
     </section>
   );
 }
 
 function Testimonials() {
+  const { t, fonts } = useLang();
+  const h2 = useH2();
   if (!config.showTestimonials) return null;
   return (
-    <section
-      className="mwoa-section"
-      style={{ padding: "110px 60px", background: "#0f0809", borderTop: "1px solid rgba(153,0,0,.5)" }}
-    >
+    <section className="mwoa-section" style={{ padding: "110px 60px", background: "#0f0809", borderTop: "1px solid rgba(153,0,0,.5)" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            gap: 40,
-            marginBottom: 44,
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 44, flexWrap: "wrap" }}>
           <div>
-            <SectionLabel>٠٦ — العملاء</SectionLabel>
-            <h2 style={h2Style}>ماذا يقول المشترون</h2>
+            <SectionLabel>{t.testi.label}</SectionLabel>
+            <h2 style={h2}>{t.testi.h2}</h2>
           </div>
-          <p style={{ fontFamily: C.ui, fontSize: 14, lineHeight: 1.8, color: "#7d7466", maxWidth: 320, margin: 0 }}>
-            فارغة عن قصد — ضع هنا ثلاث رسائل حقيقية من مشتريك.
-          </p>
+          <p style={{ fontFamily: fonts.ui, fontSize: 14, lineHeight: 1.8, color: "#7d7466", maxWidth: 320, margin: 0 }}>{t.testi.note}</p>
         </div>
-        <div
-          className="mwoa-testimonials"
-          style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, background: "rgba(153,0,0,.55)" }}
-        >
+        <div className="mwoa-testimonials" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, background: "rgba(153,0,0,.55)" }}>
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              style={{
-                background: "#180a0b",
-                padding: "34px 30px",
-                minHeight: 200,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <span style={{ fontFamily: C.arabic, fontSize: 20, lineHeight: 1.9, color: "#6a6459" }}>
-                « اقتباس العميل — استبدله برسالة حقيقية. »
-              </span>
-              <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#4f4a42" }}>
-                الاسم · المدينة
-              </span>
+            <div key={i} style={{ background: "#180a0b", padding: "34px 30px", minHeight: 200, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: fonts.display, fontSize: 20, lineHeight: 1.9, color: "#6a6459" }}>{t.testi.quote}</span>
+              <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#4f4a42" }}>{t.testi.who}</span>
             </div>
           ))}
         </div>
@@ -731,48 +444,28 @@ function Testimonials() {
 }
 
 function Faq() {
+  const { t, fonts } = useLang();
+  const h2 = useH2();
   const [open, setOpen] = useState(0);
   return (
     <section id="faq" className="mwoa-section" style={{ padding: "110px 60px", background: "#120b0c" }}>
       <div className="reveal" style={{ maxWidth: 900, margin: "0 auto" }}>
-        <SectionLabel>٠٧ — الأسئلة</SectionLabel>
-        <h2 style={{ ...h2Style, marginBottom: 44 }}>قبل أن تطلب</h2>
-        {faqs.map((item, i) => {
+        <SectionLabel>{t.faqHead.label}</SectionLabel>
+        <h2 style={{ ...h2, marginBottom: 44 }}>{t.faqHead.h2}</h2>
+        {t.faqs.map(([q, a], i) => {
           const isOpen = open === i;
           return (
-            <div key={item.q} style={{ borderTop: "1px solid rgba(153,0,0,.45)" }}>
+            <div key={q} style={{ borderTop: "1px solid rgba(153,0,0,.45)" }}>
               <div
                 className="faq-row"
                 onClick={() => setOpen(isOpen ? -1 : i)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 24,
-                  padding: "26px 4px",
-                  cursor: "pointer",
-                }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "26px 4px", cursor: "pointer" }}
               >
-                <span style={{ fontFamily: C.arabic, fontSize: 24, fontWeight: 700, color: C.paper }}>
-                  {item.q}
-                </span>
-                <span style={{ fontFamily: C.mono, fontSize: 20, color: C.gold, flex: "none" }}>
-                  {isOpen ? "−" : "+"}
-                </span>
+                <span style={{ fontFamily: fonts.display, fontSize: 24, fontWeight: 700, color: C.paper }}>{q}</span>
+                <span style={{ fontFamily: C.mono, fontSize: 20, color: C.gold, flex: "none" }}>{isOpen ? "−" : "+"}</span>
               </div>
               {isOpen && (
-                <p
-                  style={{
-                    fontSize: 17,
-                    lineHeight: 2,
-                    color: "#b8b0a2",
-                    margin: 0,
-                    padding: "0 4px 30px 60px",
-                    fontFamily: C.ui,
-                  }}
-                >
-                  {item.a}
-                </p>
+                <p style={{ fontSize: 17, lineHeight: 2, color: "#b8b0a2", margin: 0, padding: "0 4px 30px", fontFamily: fonts.ui }}>{a}</p>
               )}
             </div>
           );
@@ -784,82 +477,47 @@ function Faq() {
 }
 
 function Footer() {
+  const { t, fonts } = useLang();
   return (
-    <footer
-      id="contact"
-      style={{ padding: "90px 60px 50px", background: "#0b0708", borderTop: "2px solid #990000" }}
-    >
-      <div
-        className="mwoa-footer-grid"
-        style={{
-          maxWidth: 1180,
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1.2fr 1fr 1fr",
-          gap: 60,
-          alignItems: "start",
-        }}
-      >
+    <footer id="contact" style={{ padding: "90px 60px 50px", background: "#0b0708", borderTop: "2px solid #990000" }}>
+      <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 60, alignItems: "start" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <img src="/assets/whale.png" alt="MWOA" style={{ height: 34, width: "auto", display: "block" }} />
-            <span style={{ fontFamily: C.serif, fontSize: 26, letterSpacing: ".28em", color: C.gold }}>MWOA</span>
+            <span style={{ fontFamily: C.brand, fontSize: 26, letterSpacing: ".28em", color: C.gold }}>MWOA</span>
           </div>
-          <p style={{ fontSize: 15, lineHeight: 1.9, color: "#8d8578", margin: "20px 0 0", maxWidth: 340, fontFamily: C.ui }}>
-            عنبر الحوت. منتج واحد، يُباع بالغرام، ويُوزن يدوياً.
-          </p>
+          <p style={{ fontSize: 15, lineHeight: 1.9, color: "#8d8578", margin: "20px 0 0", maxWidth: 340, fontFamily: fonts.ui }}>{t.footer.tagline}</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#7d7466", marginBottom: 4 }}>
-            اتصل بنا
-          </div>
-          <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: C.ui }}>
-            واتساب · {config.whatsapp}
+          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#7d7466", marginBottom: 4 }}>{t.footer.contact}</div>
+          <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>
+            {t.footer.wa} · {config.whatsapp}
           </a>
-          <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: C.ui }}>
-            {config.email}
-          </a>
+          <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>{config.email}</a>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#7d7466", marginBottom: 4 }}>
-            أوقات العمل
-          </div>
-          <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: C.ui }}>الإثنين — السبت · ٩ص—٨م</span>
-          <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: C.ui }}>توصيل إلى كل أنحاء المغرب</span>
+          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#7d7466", marginBottom: 4 }}>{t.footer.hours}</div>
+          <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: fonts.ui }}>{t.footer.hoursVal}</span>
+          <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: fonts.ui }}>{t.footer.ship}</span>
         </div>
       </div>
-      <div
-        style={{
-          maxWidth: 1180,
-          margin: "60px auto 0",
-          paddingTop: 24,
-          borderTop: "1px solid rgba(212,175,55,.15)",
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 20,
-          fontFamily: C.mono,
-          fontSize: 11,
-          letterSpacing: ".14em",
-          color: "#5c564d",
-        }}
-      >
+      <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#5c564d" }}>
         <span style={{ color: "#c00000", fontSize: 13, letterSpacing: ".3em" }}>© MWOA · 666</span>
-        <span>المغرب</span>
+        <span>{t.footer.country}</span>
       </div>
     </footer>
   );
 }
 
-export default function App() {
+function AppInner() {
+  const { dir } = useLang();
   const [modalOpen, setModalOpen] = useState(false);
   const openModal = () => setModalOpen(true);
 
-  // Scroll-reveal animations (GSAP ScrollTrigger).
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const els = gsap.utils.toArray(".reveal");
     if (reduce || !els.length) return;
-
     gsap.set(els, { opacity: 0, y: 46 });
     const triggers = els.map((el) =>
       gsap.to(el, {
@@ -872,10 +530,9 @@ export default function App() {
     );
     const refresh = () => ScrollTrigger.refresh();
     window.addEventListener("load", refresh);
-    const t = setTimeout(refresh, 400);
-
+    const timer = setTimeout(refresh, 400);
     return () => {
-      clearTimeout(t);
+      clearTimeout(timer);
       window.removeEventListener("load", refresh);
       triggers.forEach((tw) => tw.scrollTrigger?.kill());
       ScrollTrigger.getAll().forEach((s) => s.kill());
@@ -883,7 +540,7 @@ export default function App() {
   }, []);
 
   return (
-    <div dir="rtl" lang="ar" style={{ background: "#120b0c", overflowX: "hidden" }}>
+    <div dir={dir} style={{ background: "#120b0c", overflowX: "hidden" }}>
       <Nav onOrder={openModal} />
       <Hero onOrder={openModal} />
       <Marquee />
@@ -897,5 +554,13 @@ export default function App() {
       <Footer />
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LangProvider>
+      <AppInner />
+    </LangProvider>
   );
 }
