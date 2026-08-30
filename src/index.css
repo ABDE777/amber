@@ -58,6 +58,35 @@ a:hover {
   }
 }
 
+@keyframes mwoaFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mwoaPop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Arabic UI font + comfortable RTL defaults */
+body {
+  font-family: Tajawal, Karla, system-ui, sans-serif;
+}
+
+input::placeholder {
+  color: #6a6459;
+}
+
 /* --- hover states (were `style-hover` in the Design Canvas) --- */
 .nav-link {
   transition: color 0.2s ease;
