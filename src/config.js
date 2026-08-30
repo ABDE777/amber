@@ -1,11 +1,9 @@
-// Site configuration — these are the values that were editable props in the
-// original Design Canvas file (Commerce / Contact / Sections panels).
-// Change them here to rebrand or re-price the page.
+// Site configuration — edit these to rebrand, re-price, or change contacts.
 export const config = {
   // Commerce
-  price: 199, // MAD per gram (flat rate)
+  price: 199, // درهم / غرام (سعر ثابت)
 
-  // Contact
+  // Contact (admin — يستقبل الطلبات)
   whatsapp: "+212 6 00 00 00 00",
   email: "commande@mwoa.ma",
 
@@ -13,37 +11,37 @@ export const config = {
   showTestimonials: true,
 };
 
-// Derived links (WhatsApp deep-link + mailto), computed from the config above.
+// Derived links (WhatsApp + mailto) from the config above.
 const digits = String(config.whatsapp).replace(/[^0-9]/g, "");
 const waMessage = encodeURIComponent(
-  "Bonjour MWOA, je souhaite commander du 3anber 7out. Poids souhaité : "
+  "السلام عليكم، أرغب في طلب عنبر الحوت. الكمية المطلوبة: "
 );
 
 export const links = {
   wa: `https://wa.me/${digits}?text=${waMessage}`,
-  mail: `mailto:${config.email}?subject=Commande%203anber%207out`,
+  mail: `mailto:${config.email}?subject=${encodeURIComponent("طلب عنبر الحوت")}`,
 };
 
-// FAQ content. `a` is answered dynamically for the price question.
+// FAQ content (Arabic).
 export const faqs = [
   {
-    q: "How do I know it is real?",
-    a: "Every piece is shown, weighed and packed on video before it leaves. The scent test and the hot-needle test are explained to you first, so you can check the piece yourself when it arrives.",
+    q: "كيف أتأكد أنه أصلي؟",
+    a: "كل قطعة تُعرض وتُوزن وتُغلّف أمام الكاميرا قبل الإرسال. نشرح لك اختبار الرائحة واختبار الإبرة الساخنة مسبقاً، لتتمكن من فحص القطعة بنفسك عند وصولها.",
   },
   {
-    q: "Why does the price change nothing per gram?",
-    a: `The rate is flat: ${config.price} MAD per gram, whatever weight you order. What varies is the piece itself — colour, texture and aroma are never identical.`,
+    q: "لماذا السعر ثابت لكل غرام؟",
+    a: `السعر ثابت: ${config.price} درهم للغرام مهما كان الوزن الذي تطلبه. ما يختلف هو القطعة نفسها — اللون والملمس والرائحة لا تتطابق أبداً.`,
   },
   {
-    q: "What is the smallest order?",
-    a: "Tell us the weight you want and we confirm availability. Small quantities are normal for perfumery work.",
+    q: "ما هو أصغر طلب ممكن؟",
+    a: "أخبرنا بالوزن الذي تريده ونؤكد لك توفّره. الكميات الصغيرة أمر معتاد في أعمال العطارة.",
   },
   {
-    q: "How is it shipped?",
-    a: "Sealed and padded, sent anywhere in Morocco. Weight, date and reference are written on the note that travels with it.",
+    q: "كيف يتم الشحن؟",
+    a: "مغلّف ومحكم، يُرسل إلى كل أنحاء المغرب. الوزن والتاريخ والمرجع مكتوبة على البطاقة المرافقة للقطعة.",
   },
   {
-    q: "Can I use it directly on skin?",
-    a: "It is used as a perfumery material, usually macerated or diluted. Ask us how you plan to use it and we will point you to the right piece.",
+    q: "هل يمكن استعماله مباشرة على البشرة؟",
+    a: "يُستعمل كمادة للعطارة، عادةً بعد النقع أو التخفيف. أخبرنا بطريقة استعمالك وسنرشدك إلى القطعة المناسبة.",
   },
 ];
