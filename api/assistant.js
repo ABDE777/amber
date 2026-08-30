@@ -1,5 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { notifyAdmin } from "../lib/notify.js";
+import { isPromptAttack } from "../lib/guard.js";
+
+const BLOCKED_REPLY = {
+  ar: "عذراً، لا يمكنني معالجة هذا الطلب. يسعدني مساعدتك في أي سؤال عن عنبر الحوت أو في إتمام طلبك.",
+  en: "Sorry, I can't process that request. I'm happy to help with any question about ambergris or with completing your order.",
+};
 
 // POST /api/assistant  { messages: [{role, content}], lang }
 // A guided order assistant. Chats with the customer, and once it has collected
@@ -72,6 +78,18 @@ export default async function handler(req, res) {
     .map((m) => ({ role: m.role, content: m.content }));
   if (!messages.length || messages[messages.length - 1].role !== "user") {
     return res.status(400).json({ error: "expected_user_message" });
+  }
+
+  // Prompt Guard 2 (Groq) screens the latest customer message for prompt
+  // injection / jailbreak before it reaches Claude. Fails open if unconfigured.
+  const lastUser = messages[messages.length - 1].content;
+  try {
+    const guard = await isPromptAttack(lastUser);
+    if (guard.attack) {
+      return res.status(200).json({ reply: BLOCKED_REPLY[lang], done: false, blocked: true });
+    }
+  } catch {
+    /* fail open */
   }
 
   const client = new Anthropic();

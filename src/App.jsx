@@ -422,39 +422,6 @@ function Order({ onOrder }) {
   );
 }
 
-function Faq() {
-  const { t, fonts } = useLang();
-  const h2 = useH2();
-  const [open, setOpen] = useState(0);
-  return (
-    <section id="faq" className="mwoa-section" style={{ padding: "110px 60px", background: "#120b0c" }}>
-      <div className="reveal" style={{ maxWidth: 900, margin: "0 auto" }}>
-        <SectionLabel>{t.faqHead.label}</SectionLabel>
-        <h2 style={{ ...h2, marginBottom: 44 }}>{t.faqHead.h2}</h2>
-        {t.faqs.map(([q, a], i) => {
-          const isOpen = open === i;
-          return (
-            <div key={q} style={{ borderTop: "1px solid rgba(153,0,0,.45)" }}>
-              <div
-                className="faq-row"
-                onClick={() => setOpen(isOpen ? -1 : i)}
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "26px 4px", cursor: "pointer" }}
-              >
-                <span style={{ fontFamily: fonts.display, fontSize: 24, fontWeight: 700, color: C.paper }}>{q}</span>
-                <span style={{ fontFamily: C.mono, fontSize: 20, color: C.gold, flex: "none" }}>{isOpen ? "−" : "+"}</span>
-              </div>
-              {isOpen && (
-                <p style={{ fontSize: 17, lineHeight: 2, color: "#b8b0a2", margin: 0, padding: "0 4px 30px", fontFamily: fonts.ui }}>{a}</p>
-              )}
-            </div>
-          );
-        })}
-        <div style={{ borderTop: "1px solid rgba(153,0,0,.45)" }} />
-      </div>
-    </section>
-  );
-}
-
 function Footer() {
   const { t, fonts } = useLang();
   return (
@@ -528,7 +495,6 @@ function AppInner() {
       <Gallery />
       <Authenticity />
       <Order onOrder={openModal} />
-      <Faq />
       <Footer />
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
       <Assistant onOrder={openModal} />
