@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { config } from "../config.js";
 import { useLang } from "../i18n.jsx";
+import { COUNTRIES, formatPhoneWithCountry } from "../../lib/countries.js";
 
 const C = {
   gold: "#D4AF37",
@@ -12,17 +13,20 @@ const C = {
 
 const adminDigits = String(config.whatsapp).replace(/[^0-9]/g, "");
 
-/**
- * Order form modal. Collects quantity, full name, email and phone. One submit
- * button POSTs to /api/order, which sends the order to the admin over WhatsApp
- * AND email automatically. If the backend isn't configured yet, it falls back
- * to opening a pre-filled WhatsApp message to the admin — still one click, no
- * channel choice for the customer.
- */
 export default function OrderModal({ open, onClose }) {
   const { t, fonts, dir } = useLang();
   const m = t.modal;
-  const [form, setForm] = useState({ name: "", qty: "", email: "", phone: "" });
+  const lang = dir === "rtl" ? "ar" : "en";
+  const defaultCountry = lang === "ar" ? "المغرب" : "Morocco";
+
+  const [form, setForm] = useState({
+    name: "",
+    qty: "",
+    email: "",
+    phone: "",
+    country_residence: defaultCountry,
+    country_delivery: defaultCountry,
+  });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | ok | fail
 
@@ -43,27 +47,33 @@ export default function OrderModal({ open, onClose }) {
   if (!open) return null;
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  const lang = dir === "rtl" ? "ar" : "en";
 
   const validate = () => {
     const er = {};
     if (!form.name.trim()) er.name = m.err.name;
     if (!form.qty || Number(form.qty) <= 0) er.qty = m.err.qty;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = m.err.email;
-    if (form.phone.replace(/[^0-9]/g, "").length < 8) er.phone = m.err.phone;
+    const formattedPhone = formatPhoneWithCountry(form.phone, form.country_residence);
+    if (formattedPhone.replace(/[^0-9]/g, "").length < 8) er.phone = m.err.phone;
+    if (!form.country_residence) er.country_residence = m.err.country_residence;
+    if (!form.country_delivery) er.country_delivery = m.err.country_delivery;
     setErrors(er);
     return Object.keys(er).length === 0;
   };
 
-  const buildMessage = () =>
-    [
+  const buildMessage = () => {
+    const formattedPhone = formatPhoneWithCountry(form.phone, form.country_residence);
+    return [
       t.msg.head,
       "————————————————",
       `${t.msg.name}: ${form.name}`,
       `${t.msg.qty}: ${form.qty} ${t.msg.unit}`,
       `${t.msg.email}: ${form.email}`,
-      `${t.msg.phone}: ${form.phone}`,
+      `${t.msg.phone}: ${formattedPhone}`,
+      `${m.countryResidence}: ${form.country_residence}`,
+      `${m.countryDelivery}: ${form.country_delivery}`,
     ].join("\n");
+  };
 
   const whatsappFallback = () => {
     window.open(
@@ -76,11 +86,12 @@ export default function OrderModal({ open, onClose }) {
   const submit = async () => {
     if (!validate()) return;
     setStatus("sending");
+    const formattedPhone = formatPhoneWithCountry(form.phone, form.country_residence);
     try {
       const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, qty: Number(form.qty), lang }),
+        body: JSON.stringify({ ...form, phone: formattedPhone, qty: Number(form.qty), lang }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
@@ -118,6 +129,38 @@ export default function OrderModal({ open, onClose }) {
           outline: "none",
         }}
       />
+      {errors[key] && <span style={{ color: "#ff7a52", fontSize: 12, fontFamily: fonts.ui }}>{errors[key]}</span>}
+    </label>
+  );
+
+  const selectField = (label, key, placeholder) => (
+    <label style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".08em", color: "#a79f8f" }}>{label}</span>
+      <select
+        value={form[key]}
+        onChange={set(key)}
+        style={{
+          background: "#2f2323",
+          border: `1px solid ${errors[key] ? "#e0562e" : "rgba(212,175,55,.35)"}`,
+          color: C.paper,
+          fontSize: 15,
+          fontFamily: fonts.ui,
+          padding: "13px 14px",
+          borderRadius: 4,
+          outline: "none",
+          cursor: "pointer",
+        }}
+      >
+        <option value="">-- {placeholder} --</option>
+        {COUNTRIES.map((c) => {
+          const name = lang === "ar" ? c.nameAr : c.nameEn;
+          return (
+            <option key={c.code + c.nameEn} value={name}>
+              {name} ({c.code})
+            </option>
+          );
+        })}
+      </select>
       {errors[key] && <span style={{ color: "#ff7a52", fontSize: 12, fontFamily: fonts.ui }}>{errors[key]}</span>}
     </label>
   );
@@ -190,6 +233,8 @@ export default function OrderModal({ open, onClose }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {field(m.name, "name", "text", m.namePh)}
               {field(m.qty, "qty", "number", m.qtyPh, { min: 1, inputMode: "numeric" })}
+              {selectField(m.countryResidence, "country_residence", m.countryResidencePh)}
+              {selectField(m.countryDelivery, "country_delivery", m.countryDeliveryPh)}
               {field(m.email, "email", "email", m.emailPh)}
               {field(m.phone, "phone", "tel", m.phonePh, { inputMode: "tel" })}
             </div>

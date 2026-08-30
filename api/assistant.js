@@ -30,12 +30,34 @@ const systemPrompt = (lang) => {
 Facts you may use:
 - One product only: natural ambergris, sold by the gram, weighed by hand.
 - Each piece is unique in colour, texture, shape and aroma; formed at sea, collected on the Atlantic coast.
-- Every order is weighed on a calibrated scale, filmed while packed, sent sealed with a signed note (weight, date, origin). Delivery across Morocco.
+- Every order is weighed on a calibrated scale, filmed while packed, sent sealed with a signed note (weight, date, origin).
 - Do NOT state or invent a price. If asked about price, say it is confirmed directly when the order is placed.
 
-Your job: answer briefly and warmly, then help the customer place an order. Collect these four fields, one or two at a time, not all at once:
-1) full name  2) quantity in grams  3) email  4) phone number.
-When you have all four, read them back for confirmation. After the customer confirms, call the submit_order tool. After it succeeds, thank them and tell them the order was received and they'll be contacted shortly. Keep replies short (2-4 sentences).`;
+AVAILABLE COUNTRIES (FOR RESIDENCE & DELIVERY):
+We serve Morocco and Asian Arab countries only. Whenever asking for country of residence or delivery, ALWAYS present this list clearly for the customer to choose:
+- 🇲🇦 المغرب (Morocco) (+212)
+- 🇸🇦 السعودية (Saudi Arabia) (+966)
+- 🇦🇪 الإمارات (United Arab Emirates) (+971)
+- 🇶🇦 قطر (Qatar) (+974)
+- 🇰🇼 الكويت (Kuwait) (+965)
+- 🇴🇲 عُمان (Oman) (+968)
+- 🇧🇭 البحرين (Bahrain) (+973)
+- 🇯🇴 الأردن (Jordan) (+962)
+- 🇱🇧 لبنان (Lebanon) (+961)
+- 🇮🇶 العراق (Iraq) (+964)
+- 🇾🇪 اليمن (Yemen) (+967)
+- 🇵🇸 فلسطين (Palestine) (+970)
+- 🇸🇾 سوريا (Syria) (+963)
+
+Your job: answer briefly and warmly, then help the customer place an order. Collect these six fields, one or two at a time, not all at once:
+1) Full Name
+2) Quantity in grams
+3) Country of Residence (MUST present the country list above)
+4) Country of Delivery (MUST present the country list above)
+5) Phone number (if the customer does not type a country code, automatically append the country code of their residence country e.g. +212 for Morocco, +966 for Saudi Arabia, etc.)
+6) Email
+
+When you have all six fields, read them back clearly for confirmation (showing the phone number with international country code). After the customer confirms, call the submit_order tool. After it succeeds, thank them and tell them the order was received and they'll be contacted shortly. Keep replies short (2-4 sentences).`;
 };
 
 // OpenAI-style tool definition (Groq is OpenAI-compatible).
@@ -45,16 +67,18 @@ const tools = [
     function: {
       name: "submit_order",
       description:
-        "Place the customer's ambergris order. Call ONLY after collecting and confirming all four fields with the customer.",
+        "Place the customer's ambergris order. Call ONLY after collecting and confirming all six fields with the customer.",
       parameters: {
         type: "object",
         properties: {
           name: { type: "string", description: "Customer full name" },
           qty: { type: "number", description: "Quantity in grams" },
           email: { type: "string", description: "Customer email" },
-          phone: { type: "string", description: "Customer phone number" },
+          phone: { type: "string", description: "Customer phone number (with country code)" },
+          country_residence: { type: "string", description: "Country where the customer currently resides" },
+          country_delivery: { type: "string", description: "Country where the order should be delivered" },
         },
-        required: ["name", "qty", "email", "phone"],
+        required: ["name", "qty", "email", "phone", "country_residence", "country_delivery"],
       },
     },
   },
@@ -144,7 +168,14 @@ export default async function handler(req, res) {
               args = {};
             }
             const r = await notifyAdmin(
-              { name: args.name, qty: args.qty, email: args.email, phone: args.phone },
+              {
+                name: args.name,
+                qty: args.qty,
+                email: args.email,
+                phone: args.phone,
+                country_residence: args.country_residence,
+                country_delivery: args.country_delivery,
+              },
               lang
             );
             ordered = true;

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLang } from "../i18n.jsx";
+import { config } from "../config.js";
 
 const C = {
   gold: "#D4AF37",
@@ -10,11 +11,8 @@ const C = {
   panel: "#332626",
 };
 
-/**
- * Floating AI order assistant. Talks to /api/assistant (Groq-backed) to guide
- * the customer and place the order. If the endpoint isn't configured (no API
- * key), it shows a short notice and points to the order form instead.
- */
+const adminDigits = String(config.whatsapp || "").replace(/[^0-9]/g, "");
+
 export default function Assistant({ onOrder }) {
   const { t, fonts, dir } = useLang();
   const a = t.assistant;
@@ -23,11 +21,12 @@ export default function Assistant({ onOrder }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [orderCompleted, setOrderCompleted] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [msgs, loading, open]);
+  }, [msgs, loading, open, orderCompleted]);
 
   const send = async () => {
     const text = input.trim();
@@ -49,6 +48,9 @@ export default function Assistant({ onOrder }) {
       if (!res.ok) throw new Error("bad");
       const data = await res.json();
       setMsgs((m) => [...m, { role: "assistant", content: data.reply || "…" }]);
+      if (data.done) {
+        setOrderCompleted(true);
+      }
     } catch {
       setMsgs((m) => [...m, { role: "assistant", content: a.error }]);
     } finally {
@@ -126,6 +128,37 @@ export default function Assistant({ onOrder }) {
               <Bubble role="assistant" fonts={fonts}>
                 <span style={{ opacity: 0.7 }}>…</span>
               </Bubble>
+            )}
+            {orderCompleted && (
+              <div style={{ marginTop: 8, textAlign: "center" }}>
+                <a
+                  href={`https://wa.me/${adminDigits}?text=${encodeURIComponent(
+                    dir === "rtl"
+                      ? "مرحباً، أود تأكيد الطلب وتحديد طريقة الدفع (عنبر الحوت)"
+                      : "Hello, I would like to confirm my order and payment method (Ambergris)"
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    padding: "12px 18px",
+                    background: "#25D366",
+                    color: "#fff",
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    textDecoration: "none",
+                    fontFamily: fonts.ui,
+                    boxShadow: "0 4px 14px rgba(37,211,102,.4)",
+                  }}
+                >
+                  <span>💬</span>
+                  {dir === "rtl" ? "تأكيد الطلب والدفع عبر واتساب" : "Confirm Order & Payment on WhatsApp"}
+                </a>
+              </div>
             )}
             {disabled && (
               <div style={{ fontFamily: fonts.ui, fontSize: 13, color: C.body, background: "#3a2827", border: "1px solid rgba(212,175,55,.25)", borderRadius: 8, padding: 12 }}>
