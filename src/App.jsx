@@ -329,7 +329,12 @@ function Origin() {
 function Gallery() {
   const { t, fonts } = useLang();
   const h2 = useH2();
-  const spans = [{ gridRow: "span 2" }, {}, {}, { gridColumn: "span 2" }];
+  const galleryItems = [
+    { src: "/assets/gallery-1.jpg", span: { gridRow: "span 2" } },
+    { src: "/assets/gallery-2.jpg", span: {} },
+    { src: "/assets/gallery-3.jpg", span: {} },
+    { src: "/assets/gallery-4.jpg", span: { gridColumn: "span 2" } },
+  ];
   return (
     <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#2f2323" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
@@ -340,20 +345,43 @@ function Gallery() {
           </div>
           <p style={{ fontFamily: fonts.ui, fontSize: 14, lineHeight: 1.8, color: "#988e80", maxWidth: 320, margin: 0 }}>{t.gallery.note}</p>
         </div>
-        <div className="mwoa-gallery" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gridTemplateRows: "200px 200px", gap: 2, background: "rgba(153,0,0,.55)" }}>
+        <div className="mwoa-gallery" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gridTemplateRows: "240px 240px", gap: 8, background: "transparent" }}>
           {t.gallery.slots.map((label, i) => (
             <div
               key={label}
+              className="gallery-card"
               style={{
-                ...spans[i],
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "repeating-linear-gradient(45deg,#382929 0 12px,#443131 12px 24px)",
-                border: "1px solid rgba(153,0,0,.45)",
+                ...galleryItems[i].span,
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: 6,
+                border: "1px solid rgba(212,175,55,.3)",
+                boxShadow: "0 10px 30px rgba(0,0,0,.4)",
               }}
             >
-              <span style={{ fontFamily: fonts.ui, fontSize: 14, color: "#8d8578", padding: "0 12px", textAlign: "center" }}>{label}</span>
+              <img
+                src={galleryItems[i].src}
+                alt={label}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                  transition: "transform .6s cubic-bezier(.2,1,.3,1)",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(180deg,transparent 40%,rgba(0,0,0,.85) 100%)",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  padding: "16px 20px",
+                }}
+              >
+                <span style={{ fontFamily: fonts.ui, fontSize: 14, fontWeight: 600, color: C.paper, letterSpacing: ".04em" }}>{label}</span>
+              </div>
             </div>
           ))}
         </div>

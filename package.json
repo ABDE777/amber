@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "MWOA — 3anber 7out (ambergris) landing page, as a React + Vite app.",
+  "description": "Moroccan World of Amber (MWOA) — 3anber 7out (ambergris) landing page, as a React + Vite app.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
