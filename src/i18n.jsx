@@ -49,7 +49,6 @@ export const STR = {
     gallery: {
       label: "٠٣ — المعرض",
       h2: "القطع",
-      note: "ضع صورك الحقيقية في هذه الخانات الأربع — صور المخزون الحقيقي تبيع أكثر من أي وصف.",
       slots: [
         "الصورة الرئيسية · القطعة في اليد",
         "تكبير · الملمس",
@@ -185,7 +184,6 @@ export const STR = {
     gallery: {
       label: "03 — GALLERY",
       h2: "The pieces",
-      note: "Drop your own photos into these four slots — shots of real stock sell this better than any copy.",
       slots: [
         "MAIN PHOTO · piece in hand",
         "MACRO · texture",

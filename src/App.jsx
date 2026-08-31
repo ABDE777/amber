@@ -3,9 +3,9 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { config } from "./config.js";
 import { LangProvider, useLang } from "./i18n.jsx";
-import ProductModel3D from "./components/ProductModel3D.jsx";
 import OrderModal from "./components/OrderModal.jsx";
 import Assistant from "./components/Assistant.jsx";
+import AmberMotionBackground from "./components/AmberMotionBackground.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -125,19 +125,37 @@ function Hero({ onOrder }) {
         alignItems: "center",
         gap: 40,
         padding: "150px 60px 90px",
+        overflow: "hidden",
         background:
           "radial-gradient(1200px 780px at 26% 42%, #8a2222 0%, #5a2b2c 38%, #342726 68%, #2a1e1f 100%)",
       }}
     >
+      {/* Animated Ambergris Floating Motion Background */}
+      <AmberMotionBackground />
+
+      {/* Dark Luxury Gradient Overlay */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "repeating-linear-gradient(90deg,rgba(153,0,0,.16) 0 1px,transparent 1px 88px)",
+          zIndex: 1,
+          background:
+            "linear-gradient(135deg, rgba(42,30,31,0.85) 0%, rgba(90,43,44,0.55) 50%, rgba(42,30,31,0.9) 100%)",
           pointerEvents: "none",
         }}
       />
-      <div className="hero-copy" style={{ position: "relative", maxWidth: 640 }}>
+
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          background: "repeating-linear-gradient(90deg,rgba(153,0,0,.12) 0 1px,transparent 1px 88px)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div className="hero-copy" style={{ position: "relative", zIndex: 2, maxWidth: 640 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 30 }}>
           <span style={{ width: 44, height: 1, background: C.gold, display: "block" }} />
           <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".24em", color: C.gold }}>
@@ -184,35 +202,45 @@ function Hero({ onOrder }) {
           </button>
         </div>
       </div>
-      <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
+
+      {/* Right: amber image with background blended away */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          mixBlendMode: "screen",
+        }}
+      >
         <div
           style={{
             position: "absolute",
-            width: "82%",
+            width: "85%",
             aspectRatio: "1",
             borderRadius: "50%",
-            background: "radial-gradient(circle,rgba(190,0,0,.7),rgba(255,120,20,.22) 40%,transparent 68%)",
+            background: "radial-gradient(circle,rgba(190,0,0,.55),rgba(255,180,30,.18) 45%,transparent 70%)",
             animation: "mwoaGlow 6s ease-in-out infinite",
             pointerEvents: "none",
+            mixBlendMode: "normal",
           }}
         />
-        <ProductModel3D />
-        <span
+        <img
+          src="/assets/hero-amber-bg.png"
+          alt="عنبر الحوت — Moroccan World of Amber"
           style={{
-            position: "absolute",
-            bottom: 6,
-            left: "50%",
-            transform: "translateX(-50%)",
-            fontFamily: C.mono,
-            fontSize: 10,
-            letterSpacing: ".2em",
-            color: "rgba(212,175,55,.6)",
-            pointerEvents: "none",
-            whiteSpace: "nowrap",
+            position: "relative",
+            width: "100%",
+            maxWidth: 540,
+            height: "auto",
+            display: "block",
+            objectFit: "cover",
+            borderRadius: 10,
+            animation: "mwoaFloat 8s ease-in-out infinite",
+            filter: "saturate(1.3) contrast(1.1) brightness(1.05)",
           }}
-        >
-          {t.hero.drag}
-        </span>
+        />
       </div>
     </section>
   );
@@ -343,7 +371,6 @@ function Gallery() {
             <SectionLabel>{t.gallery.label}</SectionLabel>
             <h2 style={h2}>{t.gallery.h2}</h2>
           </div>
-          <p style={{ fontFamily: fonts.ui, fontSize: 14, lineHeight: 1.8, color: "#988e80", maxWidth: 320, margin: 0 }}>{t.gallery.note}</p>
         </div>
         <div className="mwoa-gallery" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gridTemplateRows: "240px 240px", gap: 8, background: "transparent" }}>
           {t.gallery.slots.map((label, i) => (
