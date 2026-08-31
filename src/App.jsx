@@ -84,7 +84,17 @@ function Nav({ onOrder }) {
       <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
         <div className="mwoa-nav-links" style={{ display: "flex", alignItems: "center", gap: 26 }}>
           {t.nav.links.map(([href, label]) => (
-            <a key={href} href={href} className="nav-link" style={{ fontSize: 14, color: "#b8b0a2", fontFamily: fonts.ui }}>
+            <a
+              key={href}
+              href={href}
+              className="nav-link"
+              style={{ fontSize: 14, color: "#b8b0a2", fontFamily: fonts.ui }}
+              onClick={(e) => {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
               {label}
             </a>
           ))}
