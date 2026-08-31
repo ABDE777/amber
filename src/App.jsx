@@ -232,13 +232,12 @@ function Hero({ onOrder }) {
           style={{
             position: "relative",
             width: "100%",
-            maxWidth: 540,
+            maxWidth: 860,
             height: "auto",
             display: "block",
-            objectFit: "cover",
-            borderRadius: 10,
+            objectFit: "contain",
             animation: "mwoaFloat 8s ease-in-out infinite",
-            filter: "saturate(1.3) contrast(1.1) brightness(1.05)",
+            filter: "saturate(1.3) contrast(1.1) brightness(1.05) drop-shadow(0 20px 60px rgba(255,184,0,0.25))",
           }}
         />
       </div>
