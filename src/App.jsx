@@ -4,7 +4,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { config } from "./config.js";
 import { LangProvider, useLang } from "./i18n.jsx";
 import OrderModal from "./components/OrderModal.jsx";
-import Assistant from "./components/Assistant.jsx";
 import AmberMotionBackground from "./components/AmberMotionBackground.jsx";
 import AdminOrdersModal from "./components/AdminOrdersModal.jsx";
 
@@ -565,7 +564,6 @@ function AppInner() {
       <Footer />
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
       <AdminOrdersModal open={adminOpen} onClose={() => setAdminOpen(false)} />
-      <Assistant onOrder={openModal} />
     </div>
   );
 }

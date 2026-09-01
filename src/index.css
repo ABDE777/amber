@@ -133,12 +133,13 @@ input::placeholder {
   .mwoa-nav-links {
     display: none !important;
   }
-  .mwoa-nav-order {
-    display: none !important;
-  }
   .mwoa-nav {
-    padding: 12px 20px !important;
-    gap: 12px !important;
+    padding: 10px 18px !important;
+    gap: 10px !important;
+  }
+  .mwoa-nav-order {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
   }
   .mwoa-hero {
     grid-template-columns: 1fr !important;
@@ -166,7 +167,11 @@ input::placeholder {
 /* phones: stack everything, reduce chrome */
 @media (max-width: 560px) {
   .mwoa-nav {
-    padding: 12px 18px !important;
+    padding: 10px 12px !important;
+  }
+  .mwoa-nav-order {
+    padding: 7px 10px !important;
+    font-size: 12px !important;
   }
   .mwoa-hero {
     padding: 110px 18px 56px !important;
