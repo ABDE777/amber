@@ -1,2 +1,2 @@
-ID,Date,Time,Name,Grams,Email,Phone,Country_Residence,Country_Delivery,Source,Status
-"MWOA-565659","2026-09-01","22:42:45","DD 104","12345","mazgouraabdalmounim@gmail.com","+212631883412","Morocco","Morocco","Order Form","Pending"
+"ID","Date","Time","Name","Grams","Email","Phone","Country_Residence","Country_Delivery","Source","Status"
+"MWOA-565659","2026-09-01","22:42:45","DD 104","12345","mazgouraabdalmounim@gmail.com","+212631883412","Morocco","Morocco","Order Form","Paid"
