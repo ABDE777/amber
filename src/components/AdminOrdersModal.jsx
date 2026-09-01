@@ -26,12 +26,22 @@ export default function AdminOrdersModal({ open, onClose }) {
   const [toastMsg, setToastMsg] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  const DEFAULT_RATES = {
+    MAD: 400,
+    SAR: 160,
+    USD: 40,
+  };
+
   // Price per gram & currency settings
-  const [pricePerGram, setPricePerGram] = useState(() => {
-    return Number(localStorage.getItem("mwoa_price_per_gram")) || 400;
-  });
   const [currency, setCurrency] = useState(() => {
     return localStorage.getItem("mwoa_currency") || "MAD";
+  });
+
+  const [pricePerGram, setPricePerGram] = useState(() => {
+    const cur = localStorage.getItem("mwoa_currency") || "MAD";
+    const saved = Number(localStorage.getItem("mwoa_price_per_gram"));
+    if (cur === "MAD" && saved === 40) return 400;
+    return saved || DEFAULT_RATES[cur] || 400;
   });
 
   const handlePriceChange = (val) => {
@@ -43,6 +53,9 @@ export default function AdminOrdersModal({ open, onClose }) {
   const handleCurrencyChange = (c) => {
     setCurrency(c);
     localStorage.setItem("mwoa_currency", c);
+    const newPrice = DEFAULT_RATES[c] || 400;
+    setPricePerGram(newPrice);
+    localStorage.setItem("mwoa_price_per_gram", String(newPrice));
   };
 
   const fetchOrders = async () => {

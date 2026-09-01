@@ -396,8 +396,16 @@ export default async function handler(req, res) {
   <script>
     let ordersData = ${ordersJson};
     let currentActiveId = null;
-    let pricePerGram = Number(localStorage.getItem('mwoa_price_per_gram')) || 400;
+
+    const DEFAULT_RATES = {
+      MAD: 400,
+      SAR: 160,
+      USD: 40,
+    };
+
     let currency = localStorage.getItem('mwoa_currency') || 'MAD';
+    let savedPrice = Number(localStorage.getItem('mwoa_price_per_gram'));
+    let pricePerGram = (currency === 'MAD' && savedPrice === 40) ? 400 : (savedPrice || DEFAULT_RATES[currency] || 400);
 
     document.getElementById('inputPrice').value = pricePerGram;
     document.getElementById('selectCurr').value = currency;
@@ -411,6 +419,9 @@ export default async function handler(req, res) {
     function onCurrChange(val) {
       currency = val;
       localStorage.setItem('mwoa_currency', val);
+      pricePerGram = DEFAULT_RATES[val] || 400;
+      document.getElementById('inputPrice').value = pricePerGram;
+      localStorage.setItem('mwoa_price_per_gram', String(pricePerGram));
       recalculateStats();
     }
 
