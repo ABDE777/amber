@@ -14,7 +14,7 @@ function apiDevServer() {
     configureServer(server) {
       const env = loadEnv(server.config.mode, process.cwd(), "");
       for (const [k, v] of Object.entries(env)) {
-        if (process.env[k] === undefined) process.env[k] = v;
+        process.env[k] = v;
       }
 
       server.middlewares.use(async (req, res, next) => {
