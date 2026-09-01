@@ -1,7 +1,0 @@
-
-Role	Hex Code	Description
-Amber Glow	#FFB800	The primary accent used for product highlights and secondary CTAs.
-Heritage Gold	#D4AF37	Used for the brand logo, borders, and elegant serif typography.
-Ruby Heritage	#990000	A deep, luxurious red used for primary call-to-action buttons.
-Obsidian Surface	#131313	The deep dark background that provides high contrast for the gold and amber.
-Soft Amber Light	#3A3939	Used for surface containers and subtle textural elements.

@@ -213,7 +213,7 @@ function Hero({ onOrder }) {
         </div>
       </div>
 
-      {/* Right: amber image with background blended away */}
+      {/* Right: real product photo */}
       <div
         style={{
           position: "relative",
@@ -221,7 +221,6 @@ function Hero({ onOrder }) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          mixBlendMode: "screen",
         }}
       >
         <div
@@ -237,7 +236,7 @@ function Hero({ onOrder }) {
           }}
         />
         <img
-          src="/assets/hero-amber-bg.png"
+          src="/assets/21 copy.jpg"
           alt="عنبر الحوت — Moroccan World of Amber"
           style={{
             position: "relative",
@@ -245,9 +244,11 @@ function Hero({ onOrder }) {
             maxWidth: 860,
             height: "auto",
             display: "block",
-            objectFit: "contain",
+            objectFit: "cover",
+            borderRadius: 16,
             animation: "mwoaFloat 8s ease-in-out infinite",
-            filter: "saturate(1.3) contrast(1.1) brightness(1.05) drop-shadow(0 20px 60px rgba(255,184,0,0.25))",
+            boxShadow: "0 30px 80px rgba(0,0,0,.6), 0 0 40px rgba(212,175,55,.15)",
+            border: "1px solid rgba(212,175,55,.3)",
           }}
         />
       </div>
@@ -367,10 +368,10 @@ function Gallery() {
   const { t, fonts } = useLang();
   const h2 = useH2();
   const galleryItems = [
-    { src: "/assets/gallery-1.jpg", span: { gridRow: "span 2" } },
+    { src: "/assets/20 copy.jpg", span: { gridRow: "span 2" } },
+    { src: "/assets/22 copy.jpg", span: {} },
     { src: "/assets/gallery-2.jpg", span: {} },
-    { src: "/assets/gallery-3.jpg", span: {} },
-    { src: "/assets/gallery-4.jpg", span: { gridColumn: "span 2" } },
+    { src: "/assets/19 copy.jpg", span: { gridColumn: "span 2" } },
   ];
   return (
     <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#2f2323" }}>

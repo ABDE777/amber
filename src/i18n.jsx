@@ -50,10 +50,10 @@ export const STR = {
       label: "٠٣ — المعرض",
       h2: "القطع",
       slots: [
-        "الصورة الرئيسية · القطعة في اليد",
-        "تكبير · الملمس",
-        "الميزان · الوزن",
-        "التغليف المحكم · قبل الإرسال",
+        "قطعة خام · عنبر حوت طبيعي",
+        "أنواع متعددة · درجات مختلفة",
+        "ملمس · تفاصيل السطح",
+        "عنبر مطحون · على صينية ذهبية",
       ],
     },
     proof: {
@@ -185,10 +185,10 @@ export const STR = {
       label: "03 — GALLERY",
       h2: "The pieces",
       slots: [
-        "MAIN PHOTO · piece in hand",
-        "MACRO · texture",
-        "SCALE · weight",
-        "SEALED PACKAGING · before shipping",
+        "RAW PIECE · natural ambergris block",
+        "VARIETIES · multiple grades",
+        "TEXTURE · surface detail",
+        "GROUND AMBER · on gold tray",
       ],
     },
     proof: {
