@@ -11,7 +11,7 @@ import { isPromptAttack } from "../lib/guard.js";
 // Env: GROQ_API_KEY (required), GROQ_ASSISTANT_MODEL (optional, default below).
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "qwen/qwen3.6-27b";
+const DEFAULT_MODEL = "openai/gpt-oss-20b";
 
 const BLOCKED_REPLY = {
   ar: "عذراً، لا يمكنني معالجة هذا الطلب. يسعدني مساعدتك في أي سؤال عن عنبر الحوت أو في إتمام طلبك.",
@@ -24,32 +24,24 @@ const ERROR_REPLY = {
 };
 
 const systemPrompt = (lang) => {
-  const langLine = lang === "en" ? "Reply in English." : "أجب باللغة العربية دائماً وبأسلوب مهذب ومحايد.";
-  return `You are the ordering assistant for Moroccan World of Amber (MWOA), a luxury seller of "3anber 7out" (عنبر الحوت / natural ambergris). ${langLine}
+  const langLine = lang === "en" ? "Reply in English only." : "أجب باللغة العربية فقط، بأسلوب مهذب ومختصر.";
+  return `You are the ordering assistant for Moroccan World of Amber (MWOA). ${langLine}
 
-Product Facts:
-- One product only: natural raw ambergris, sold by the gram, weighed by hand.
-- Each piece is unique; formed naturally at sea and collected on the Moroccan Atlantic coast.
-- Orders are weighed on a calibrated scale, filmed during packaging, and sent sealed with a certificate of authenticity.
-- Do NOT invent or state prices. Explain that exact prices are confirmed directly based on the selected piece upon order.
+Product: natural raw ambergris (عنبر الحوت), sold by the gram. Do NOT state prices.
 
-SUPPORTED COUNTRIES: Morocco, Saudi Arabia, UAE, Qatar, Kuwait, Oman, Bahrain, Jordan, Lebanon, Iraq, Yemen, Palestine, Syria.
-
-IMPORTANT RULES ON TONE & UI:
-1. GENDER-NEUTRAL ARABIC: Always use standard respectful, gender-neutral Arabic (e.g., use "كم غراماً ترغب في طلبه؟" or "ما هي الكمية المطلوبة؟"). NEVER use gender-specific female verbs like "تودين" or "ترغبين" unless the customer explicitly states they are female.
-2. DO NOT PRINT THE LONG LIST OF COUNTRIES in text replies! The chat interface already renders an interactive dropdown and quick-tap country buttons. Simply ask the customer to select or write their country (e.g., "يرجى تحديد بلد إقامتك من القائمة أدناه أو كتابته").
-3. Whenever you ask the customer for their Country of Residence or Country of Delivery, ALWAYS append the marker '[ASK_COUNTRY]' at the very end of your response so the UI knows to display the country picker.
-4. Keep replies concise, warm, and professional (2 to 3 sentences maximum).
-
-Collect these 6 fields, one or two at a time:
-1) Full Name
-2) Quantity in grams
-3) Country of Residence (remember to append [ASK_COUNTRY])
-4) Country of Delivery (remember to append [ASK_COUNTRY])
-5) Phone number (auto-apply country dial code if user omits it)
-6) Email
-
-When all 6 fields are collected, summarize them clearly for final confirmation. Once confirmed by the customer, immediately call the submit_order tool.`;
+CRITICAL RULES — follow exactly:
+1. Collect EXACTLY these 6 fields. Ask for them ONE or TWO at a time. NEVER skip ahead.
+   - Full Name
+   - Quantity in grams (must be a number)
+   - Country of Residence
+   - Country of Delivery
+   - Phone number (include country dial code)
+   - Email address
+2. When the user's message contains a country name (e.g. Morocco, المغرب, Saudi Arabia, قطر, etc.) — accept it as the country answer immediately. Do NOT ask for the same field again.
+3. When asking for Country of Residence OR Country of Delivery, you MUST append '[ASK_COUNTRY]' at the very end of your reply — nothing after it.
+4. Do NOT list countries in your text. The UI shows a dropdown automatically.
+5. Keep every reply to 1-2 sentences maximum.
+6. Once ALL 6 fields are collected: summarize them for confirmation. After user confirms, call submit_order immediately.`;
 };
 
 // OpenAI-style tool definition (Groq is OpenAI-compatible).
@@ -77,19 +69,26 @@ const tools = [
 ];
 
 async function groqChat(apiKey, model, messages) {
+  const body = {
+    model,
+    messages,
+    tools,
+    tool_choice: "auto",
+    temperature: 0.3,
+    max_tokens: 512,
+  };
+  // Disable thinking/reasoning mode for qwen models (causes verbose output that breaks flow)
+  if (model.startsWith("qwen")) {
+    body.thinking = { type: "disabled" };
+  }
   const res = await fetch(GROQ_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model,
-      messages,
-      tools,
-      tool_choice: "auto",
-      temperature: 0.4,
-      max_tokens: 1024,
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    console.error("[Groq Error]", res.status, errBody?.error?.message);
     const err = new Error(`groq ${res.status}`);
     err.status = res.status;
     throw err;
