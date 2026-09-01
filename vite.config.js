@@ -63,6 +63,10 @@ function apiDevServer() {
           res.end(JSON.stringify(obj));
           return res;
         };
+        res.send = (body) => {
+          res.end(body);
+          return res;
+        };
 
         try {
           await handler(req, res);

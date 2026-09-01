@@ -22,12 +22,13 @@ export default async function handler(req, res) {
   if (!ok) return res.status(400).json({ ok: false, error: "invalid", errors });
 
   const lang = body.lang === "en" ? "en" : "ar";
-  const result = await notifyAdmin(order, lang);
+  const result = await notifyAdmin(order, lang, "Order Form");
 
   // configured=false means no channel env vars are set yet: tell the client so
   // it can fall back to a WhatsApp deep link.
   return res.status(200).json({
     ok: result.delivered,
+    order_id: result.orderId,
     configured: result.configured,
     channels: result.channels,
   });

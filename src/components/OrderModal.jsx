@@ -14,70 +14,87 @@ const C = {
 const adminDigits = String(config.whatsapp).replace(/[^0-9]/g, "");
 
 export default function OrderModal({ open, onClose }) {
-  const { t, fonts, dir } = useLang();
+  const { t, fonts, dir, lang } = useLang();
   const m = t.modal;
-  const lang = dir === "rtl" ? "ar" : "en";
-  const defaultCountry = lang === "ar" ? "المغرب" : "Morocco";
+  const isAr = dir === "rtl";
 
   const [form, setForm] = useState({
     name: "",
     qty: "",
     email: "",
     phone: "",
-    country_residence: defaultCountry,
-    country_delivery: defaultCountry,
+    country_residence: "",
+    country_delivery: "",
   });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | ok | fail
+  const [orderId, setOrderId] = useState("");
 
   useEffect(() => {
-    if (open) {
-      setStatus("idle");
+    if (!open) {
+      setForm({ name: "", qty: "", email: "", phone: "", country_residence: "", country_delivery: "" });
       setErrors({});
+      setStatus("idle");
+      setOrderId("");
     }
-    const onKey = (e) => e.key === "Escape" && onClose();
-    if (open) window.addEventListener("keydown", onKey);
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const validate = () => {
-    const er = {};
-    if (!form.name.trim()) er.name = m.err.name;
-    if (!form.qty || Number(form.qty) <= 0) er.qty = m.err.qty;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = m.err.email;
+    const err = {};
+    if (!form.name.trim()) err.name = m.errName;
+    const q = Number(form.qty);
+    if (!q || q <= 0) err.qty = m.errQty;
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) err.email = m.errEmail;
+    if (!form.country_residence.trim()) err.country_residence = isAr ? "يرجى اختيار بلد الإقامة" : "Please select country of residence";
+    if (!form.country_delivery.trim()) err.country_delivery = isAr ? "يرجى اختيار بلد التوصيل" : "Please select country of delivery";
+
     const formattedPhone = formatPhoneWithCountry(form.phone, form.country_residence);
-    if (formattedPhone.replace(/[^0-9]/g, "").length < 8) er.phone = m.err.phone;
-    if (!form.country_residence) er.country_residence = m.err.country_residence;
-    if (!form.country_delivery) er.country_delivery = m.err.country_delivery;
-    setErrors(er);
-    return Object.keys(er).length === 0;
+    if (!formattedPhone || formattedPhone.replace(/[^0-9]/g, "").length < 8) err.phone = m.errPhone;
+
+    setErrors(err);
+    return Object.keys(err).length === 0;
   };
 
-  const buildMessage = () => {
+  const buildMessage = (id = "") => {
     const formattedPhone = formatPhoneWithCountry(form.phone, form.country_residence);
+    const orderHeader = id ? `[${id}] ` : "";
+    if (lang === "en") {
+      return [
+        `New ambergris order ${orderHeader}`,
+        "————————————————",
+        id ? `Order ID: ${id}` : "",
+        `Full name: ${form.name}`,
+        `Quantity: ${form.qty} g`,
+        `Email: ${form.email}`,
+        `Phone: ${formattedPhone}`,
+        `Country of Residence: ${form.country_residence}`,
+        `Country of Delivery: ${form.country_delivery}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
     return [
-      t.msg.head,
+      `طلب جديد — عنبر الحوت ${orderHeader}`,
       "————————————————",
-      `${t.msg.name}: ${form.name}`,
-      `${t.msg.qty}: ${form.qty} ${t.msg.unit}`,
-      `${t.msg.email}: ${form.email}`,
-      `${t.msg.phone}: ${formattedPhone}`,
-      `${m.countryResidence}: ${form.country_residence}`,
-      `${m.countryDelivery}: ${form.country_delivery}`,
-    ].join("\n");
+      id ? `رقم الطلب: ${id}` : "",
+      `الاسم: ${form.name}`,
+      `الكمية: ${form.qty} غرام`,
+      `البريد: ${form.email}`,
+      `الهاتف: ${formattedPhone}`,
+      `بلد الإقامة: ${form.country_residence}`,
+      `بلد التوصيل: ${form.country_delivery}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
   };
 
-  const whatsappFallback = () => {
+  const whatsappFallback = (id = "") => {
     window.open(
-      `https://wa.me/${adminDigits}?text=${encodeURIComponent(buildMessage())}`,
+      `https://wa.me/${adminDigits}?text=${encodeURIComponent(buildMessage(id))}`,
       "_blank",
       "noopener"
     );
@@ -94,17 +111,21 @@ export default function OrderModal({ open, onClose }) {
         body: JSON.stringify({ ...form, phone: formattedPhone, qty: Number(form.qty), lang }),
       });
       const data = await res.json().catch(() => ({}));
+      const currentId = data.order_id || `MWOA-${Date.now().toString().slice(-6)}`;
+      setOrderId(currentId);
+
       if (res.ok && data.ok) {
-        setStatus("ok"); // backend delivered to admin
+        setStatus("ok");
       } else if (data.configured === false) {
-        whatsappFallback(); // no channels configured yet → deep link
+        whatsappFallback(currentId);
         setStatus("ok");
       } else {
         setStatus("fail");
       }
     } catch {
-      // network/API unreachable → deep-link fallback so the order still lands
-      whatsappFallback();
+      const fallbackId = `MWOA-${Date.now().toString().slice(-6)}`;
+      setOrderId(fallbackId);
+      whatsappFallback(fallbackId);
       setStatus("ok");
     }
   };
@@ -210,10 +231,40 @@ export default function OrderModal({ open, onClose }) {
           <div style={{ textAlign: "center", padding: "16px 0" }}>
             <div style={{ fontSize: 46, marginBottom: 10, color: C.gold }}>✓</div>
             <h3 style={{ fontFamily: fonts.display, fontSize: 26, margin: "0 0 10px", color: C.paper, fontWeight: 400 }}>{m.okTitle}</h3>
-            <p style={{ fontSize: 15, color: C.body, lineHeight: 1.8, margin: "0 0 24px", fontFamily: fonts.ui }}>{m.okBody}</p>
-            <button onClick={onClose} className="btn-gold" style={{ padding: "12px 30px", background: "transparent", color: C.gold, fontSize: 14, border: "1px solid rgba(212,175,55,.5)", cursor: "pointer", fontFamily: fonts.ui, borderRadius: 4 }}>
-              {m.close}
-            </button>
+            {orderId && (
+              <div style={{ display: "inline-block", background: "rgba(212,175,55,.15)", border: "1px solid rgba(212,175,55,.4)", padding: "6px 14px", borderRadius: 20, fontFamily: "monospace", color: "#FFB800", fontSize: 14, fontWeight: "bold", margin: "4px 0 16px" }}>
+                {isAr ? `رقم الطلب: ${orderId}` : `Order ID: ${orderId}`}
+              </div>
+            )}
+            <p style={{ fontSize: 15, color: C.body, lineHeight: 1.8, margin: "0 0 20px", fontFamily: fonts.ui }}>{m.okBody}</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <a
+                href={`https://wa.me/${adminDigits}?text=${encodeURIComponent(buildMessage(orderId))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "12px 18px",
+                  background: "#25D366",
+                  color: "#fff",
+                  borderRadius: 6,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  textDecoration: "none",
+                  fontFamily: fonts.ui,
+                  boxShadow: "0 4px 14px rgba(37,211,102,.4)",
+                }}
+              >
+                <span>💬</span> {isAr ? "متابعة الطلب والدفع عبر واتساب" : "Confirm on WhatsApp"}
+              </a>
+              <button onClick={onClose} className="btn-gold" style={{ padding: "10px 24px", background: "transparent", color: C.gold, fontSize: 13, border: "1px solid rgba(212,175,55,.3)", cursor: "pointer", fontFamily: fonts.ui, borderRadius: 4 }}>
+                {m.close}
+              </button>
+            </div>
           </div>
         ) : status === "fail" ? (
           <div style={{ textAlign: "center", padding: "16px 0" }}>

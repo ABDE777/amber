@@ -6,6 +6,7 @@ import { LangProvider, useLang } from "./i18n.jsx";
 import OrderModal from "./components/OrderModal.jsx";
 import Assistant from "./components/Assistant.jsx";
 import AmberMotionBackground from "./components/AmberMotionBackground.jsx";
+import AdminOrdersModal from "./components/AdminOrdersModal.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -487,7 +488,7 @@ function Order({ onOrder }) {
   );
 }
 
-function Footer() {
+function Footer({ onOpenAdmin }) {
   const { t, fonts } = useLang();
   return (
     <footer id="contact" style={{ padding: "90px 60px 50px", background: "#2a1e1f", borderTop: "2px solid #990000" }}>
@@ -512,8 +513,25 @@ function Footer() {
           <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: fonts.ui }}>{t.footer.ship}</span>
         </div>
       </div>
-      <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#8f8474" }}>
-        <span style={{ color: "#c00000", fontSize: 13, letterSpacing: ".3em" }}>© MWOA · 666</span>
+      <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#8f8474" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <span style={{ color: "#c00000", fontSize: 13, letterSpacing: ".3em" }}>© MWOA · 666</span>
+          <button
+            onClick={onOpenAdmin}
+            style={{
+              background: "#382425",
+              border: "1px solid rgba(212,175,55,.3)",
+              color: C.gold,
+              padding: "4px 10px",
+              borderRadius: 4,
+              cursor: "pointer",
+              fontSize: 11,
+              fontFamily: C.mono,
+            }}
+          >
+            📊 Admin Orders
+          </button>
+        </div>
         <span>{t.footer.country}</span>
       </div>
     </footer>
@@ -523,6 +541,7 @@ function Footer() {
 function AppInner() {
   const { dir } = useLang();
   const [modalOpen, setModalOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
   const openModal = () => setModalOpen(true);
 
   useEffect(() => {
@@ -560,8 +579,9 @@ function AppInner() {
       <Gallery />
       <Authenticity />
       <Order onOrder={openModal} />
-      <Footer />
+      <Footer onOpenAdmin={() => setAdminOpen(true)} />
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <AdminOrdersModal open={adminOpen} onClose={() => setAdminOpen(false)} />
       <Assistant onOrder={openModal} />
     </div>
   );
