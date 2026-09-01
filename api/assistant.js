@@ -94,10 +94,6 @@ async function groqChat(apiKey, model, messages) {
     temperature: 0.3,
     max_tokens: 512,
   };
-  // Disable thinking/reasoning mode for qwen models (causes verbose output that breaks flow)
-  if (model.startsWith("qwen")) {
-    body.thinking = { type: "disabled" };
-  }
   const res = await fetch(GROQ_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
