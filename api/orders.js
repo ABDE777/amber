@@ -633,11 +633,13 @@ export default async function handler(req, res) {
 
       const sym = currency === 'USD' ? '$' : currency === 'MAD' ? 'DH' : 'SAR';
       const valMoney = (Number(order.Grams || 0) * pricePerGram).toLocaleString();
+      const isLocked = (order.Status || '').toLowerCase() === 'paid' || (order.Status || '').toLowerCase() === 'shipped';
+      const priceDisplay = order.Price ? (isLocked ? '🔒 ' : '🟡 ') + order.Price : valMoney + ' ' + sym;
 
       document.getElementById("mId").innerText = order.ID;
       document.getElementById("mDateTime").innerText = order.Date + ' — ' + (order.Time || '');
       document.getElementById("mName").innerText = order.Name || '—';
-      document.getElementById("mQty").innerHTML = (order.Grams || '0') + ' g <span style="font-size:13px; color:#fff;">(' + valMoney + ' ' + sym + ')</span>';
+      document.getElementById("mQty").innerHTML = (order.Grams || '0') + ' g <span style="font-size:12.5px; color:#fff;">(' + priceDisplay + ')</span>';
       document.getElementById("mEmail").innerText = order.Email || '—';
       document.getElementById("mResidence").innerText = order.Country_Residence || '—';
       document.getElementById("mDelivery").innerText = order.Country_Delivery || '—';

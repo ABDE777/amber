@@ -570,8 +570,15 @@ export default function AdminOrdersModal({ open, onClose }) {
 
                 <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
                   <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "⚖️ الكمية والقيمة" : "⚖️ Weight & Value"}</div>
-                  <div style={{ fontWeight: 700, color: C.amber, fontFamily: "monospace", fontSize: 16 }}>
-                    {selectedOrder.Grams} g <span style={{ fontSize: 13, color: "#fff" }}>({(Number(selectedOrder.Grams || 0) * pricePerGram).toLocaleString()} {currSymbol})</span>
+                  <div style={{ fontWeight: 700, color: C.amber, fontFamily: "monospace", fontSize: 15 }}>
+                    {selectedOrder.Grams} g{" "}
+                    <span style={{ fontSize: 12.5, color: "#fff" }}>
+                      ({selectedOrder.Price ? (
+                        (selectedOrder.Status === "Paid" || selectedOrder.Status === "Shipped" ? "🔒 " : "🟡 ") + selectedOrder.Price
+                      ) : (
+                        `${(Number(selectedOrder.Grams || 0) * pricePerGram).toLocaleString()} ${currSymbol}`
+                      )})
+                    </span>
                   </div>
                 </div>
 
