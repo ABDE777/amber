@@ -6,6 +6,7 @@ import { LangProvider, useLang } from "./i18n.jsx";
 import OrderModal from "./components/OrderModal.jsx";
 import AmberMotionBackground from "./components/AmberMotionBackground.jsx";
 import AdminOrdersModal from "./components/AdminOrdersModal.jsx";
+import { COUNTRIES, calculatePrice } from "../lib/countries.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -464,15 +465,121 @@ function Authenticity() {
 }
 
 function Order({ onOrder }) {
-  const { t, fonts } = useLang();
+  const { t, fonts, dir } = useLang();
+  const isAr = dir === "rtl";
   const h2 = useH2();
+  const [selectedCountry, setSelectedCountry] = useState(isAr ? "المغرب" : "Morocco");
+  const [grams, setGrams] = useState(10);
+
+  const priceEst = calculatePrice(grams, selectedCountry, isAr);
+
   return (
     <section id="buy" className="mwoa-section" style={{ padding: "120px 60px", background: "radial-gradient(1000px 620px at 50% 0%, #a62b2b 0%, #642a2b 34%, #342726 72%)" }}>
       <div className="reveal" style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
         <SectionLabel>{t.order.label}</SectionLabel>
         <h2 style={{ ...h2, fontSize: "clamp(2.1rem, 6vw, 3.4rem)" }}>{t.order.h2}</h2>
         <p style={{ fontSize: 18, lineHeight: 2, color: C.body, maxWidth: 640, margin: "28px auto 0", fontFamily: fonts.ui }}>{t.order.body}</p>
-        <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 44, flexWrap: "wrap" }}>
+
+        {/* Live Country Currency & Price Estimator */}
+        <div
+          style={{
+            maxWidth: 580,
+            margin: "36px auto 0",
+            background: "rgba(42,30,31,.88)",
+            border: "1px solid rgba(212,175,55,.45)",
+            borderRadius: 8,
+            padding: "24px 28px",
+            boxShadow: "0 18px 40px rgba(0,0,0,.45)",
+          }}
+        >
+          <div style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".15em", color: C.gold, marginBottom: 16 }}>
+            {isAr ? "📊 حاسبة السعر المباشرة حسب عملة بلد التوصيل" : "📊 LIVE PRICE ESTIMATOR BY DELIVERY COUNTRY"}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
+            <div style={{ textAlign: isAr ? "right" : "left" }}>
+              <label style={{ fontSize: 11.5, color: "#a79f8f", display: "block", marginBottom: 6, fontFamily: fonts.ui }}>
+                {isAr ? "بلد التوصيل والعملة:" : "Delivery Country & Currency:"}
+              </label>
+              <select
+                value={selectedCountry}
+                onChange={(e) => setSelectedCountry(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  background: "#1e1314",
+                  border: "1px solid rgba(212,175,55,.35)",
+                  color: "#FFE9A8",
+                  borderRadius: 4,
+                  fontSize: 14,
+                  fontFamily: fonts.ui,
+                  cursor: "pointer",
+                  outline: "none",
+                }}
+              >
+                {COUNTRIES.map((c) => {
+                  const name = isAr ? c.nameAr : c.nameEn;
+                  const curr = isAr ? c.currencyAr : c.currencyEn;
+                  return (
+                    <option key={c.code + c.nameEn} value={name}>
+                      {name} ({curr})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <div style={{ textAlign: isAr ? "right" : "left" }}>
+              <label style={{ fontSize: 11.5, color: "#a79f8f", display: "block", marginBottom: 6, fontFamily: fonts.ui }}>
+                {isAr ? "الكمية المطلوبة (غرام):" : "Desired Weight (grams):"}
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={grams}
+                onChange={(e) => setGrams(Math.max(1, Number(e.target.value) || 1))}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  background: "#1e1314",
+                  border: "1px solid rgba(212,175,55,.35)",
+                  color: "#FFE9A8",
+                  borderRadius: 4,
+                  fontSize: 14,
+                  fontFamily: fonts.ui,
+                  outline: "none",
+                }}
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "14px 18px",
+              background: "linear-gradient(135deg, rgba(212,175,55,.15) 0%, rgba(153,0,0,.25) 100%)",
+              border: "1px solid rgba(212,175,55,.5)",
+              borderRadius: 6,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 10,
+            }}
+          >
+            <div style={{ textAlign: isAr ? "right" : "left" }}>
+              <div style={{ fontSize: 12, color: "#d8cebe", fontFamily: fonts.ui }}>
+                {isAr ? "سعر الغرام:" : "Price per gram:"} <span style={{ color: C.gold, fontWeight: 700 }}>{priceEst.formattedUnit}</span>
+              </div>
+            </div>
+            <div style={{ textAlign: isAr ? "left" : "right" }}>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "#FFB800", fontFamily: C.mono }}>
+                {priceEst.formattedTotal}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 36, flexWrap: "wrap" }}>
           <button
             onClick={onOrder}
             className="btn-ruby"

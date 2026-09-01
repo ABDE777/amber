@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { config } from "../config.js";
 import { useLang } from "../i18n.jsx";
-import { COUNTRIES, formatPhoneWithCountry } from "../../lib/countries.js";
+import { COUNTRIES, formatPhoneWithCountry, calculatePrice, getCountryInfo } from "../../lib/countries.js";
 
 const C = {
   gold: "#D4AF37",
@@ -29,6 +29,9 @@ export default function OrderModal({ open, onClose }) {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | ok | fail
   const [orderId, setOrderId] = useState("");
+
+  const targetCountry = form.country_delivery || form.country_residence;
+  const priceEstimate = form.qty && Number(form.qty) > 0 ? calculatePrice(form.qty, targetCountry, isAr) : null;
 
   useEffect(() => {
     if (!open) {
@@ -62,6 +65,9 @@ export default function OrderModal({ open, onClose }) {
   const buildMessage = (id = "") => {
     const formattedPhone = formatPhoneWithCountry(form.phone, form.country_residence);
     const orderHeader = id ? `[${id}] ` : "";
+    const est = calculatePrice(form.qty, form.country_delivery || form.country_residence, lang !== "en");
+    const priceLine = est ? (lang === "en" ? `Estimated Value: ${est.formattedTotal} (${est.formattedUnit})` : `القيمة المقدرة: ${est.formattedTotal} (${est.formattedUnit})`) : "";
+
     if (lang === "en") {
       return [
         `New ambergris order ${orderHeader}`,
@@ -69,6 +75,7 @@ export default function OrderModal({ open, onClose }) {
         id ? `Order ID: ${id}` : "",
         `Full name: ${form.name}`,
         `Quantity: ${form.qty} g`,
+        priceLine,
         `Email: ${form.email}`,
         `Phone: ${formattedPhone}`,
         `Country of Residence: ${form.country_residence}`,
@@ -83,6 +90,7 @@ export default function OrderModal({ open, onClose }) {
       id ? `رقم الطلب: ${id}` : "",
       `الاسم: ${form.name}`,
       `الكمية: ${form.qty} غرام`,
+      priceLine,
       `البريد: ${form.email}`,
       `الهاتف: ${formattedPhone}`,
       `بلد الإقامة: ${form.country_residence}`,
@@ -175,9 +183,10 @@ export default function OrderModal({ open, onClose }) {
         <option value="">-- {placeholder} --</option>
         {COUNTRIES.map((c) => {
           const name = lang === "ar" ? c.nameAr : c.nameEn;
+          const curr = lang === "ar" ? c.currencyAr : c.currencyEn;
           return (
             <option key={c.code + c.nameEn} value={name}>
-              {name} ({c.code})
+              {name} ({c.code} · {curr})
             </option>
           );
         })}
@@ -236,6 +245,12 @@ export default function OrderModal({ open, onClose }) {
                 {isAr ? `رقم الطلب: ${orderId}` : `Order ID: ${orderId}`}
               </div>
             )}
+            {priceEstimate && (
+              <div style={{ background: "rgba(0,0,0,.35)", border: "1px solid rgba(212,175,55,.3)", borderRadius: 6, padding: "10px 14px", margin: "0 auto 16px", maxWidth: 360 }}>
+                <div style={{ fontSize: 12, color: C.gold, fontFamily: C.mono }}>{isAr ? "القيمة التقديرية للطلب:" : "Estimated Total:"}</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: "#FFB800", fontFamily: C.mono, marginTop: 2 }}>{priceEstimate.formattedTotal}</div>
+              </div>
+            )}
             <p style={{ fontSize: 15, color: C.body, lineHeight: 1.8, margin: "0 0 20px", fontFamily: fonts.ui }}>{m.okBody}</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -279,13 +294,47 @@ export default function OrderModal({ open, onClose }) {
           <>
             <div style={{ fontFamily: C.mono, fontSize: 10.5, letterSpacing: ".2em", color: "#ff2d2d", marginBottom: 12 }}>{m.eyebrow}</div>
             <h3 style={{ fontFamily: fonts.display, fontSize: 30, margin: "0 0 6px", color: C.paper, fontWeight: 400 }}>{m.title}</h3>
-            <p style={{ fontSize: 14, color: C.body, margin: "0 0 26px", lineHeight: 1.7, fontFamily: fonts.ui }}>{m.sub}</p>
+            <p style={{ fontSize: 14, color: C.body, margin: "0 0 22px", lineHeight: 1.7, fontFamily: fonts.ui }}>{m.sub}</p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {field(m.name, "name", "text", m.namePh)}
               {field(m.qty, "qty", "number", m.qtyPh, { min: 1, inputMode: "numeric" })}
               {selectField(m.countryResidence, "country_residence", m.countryResidencePh)}
               {selectField(m.countryDelivery, "country_delivery", m.countryDeliveryPh)}
+
+              {/* Dynamic Country Currency & Price Calculation Card */}
+              {priceEstimate && priceEstimate.qty > 0 && (
+                <div
+                  style={{
+                    background: "linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(153,0,0,0.2) 100%)",
+                    border: "1px solid rgba(212,175,55,0.5)",
+                    borderRadius: 6,
+                    padding: "12px 16px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 11.5, color: C.gold, fontFamily: C.mono, fontWeight: 700 }}>
+                      {isAr ? "💰 السعر المقدر بعملة التوصيل:" : "💰 Estimated Price (Delivery Currency):"}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#d8cebe", marginTop: 2, fontFamily: fonts.ui }}>
+                      {priceEstimate.formattedUnit}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: isAr ? "left" : "right" }}>
+                    <div style={{ fontSize: 19, fontWeight: 700, color: "#FFB800", fontFamily: C.mono, letterSpacing: ".03em" }}>
+                      {priceEstimate.formattedTotal}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#8d8578" }}>
+                      {priceEstimate.qty} {isAr ? "غرام" : "g"}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {field(m.email, "email", "email", m.emailPh)}
               {field(m.phone, "phone", "tel", m.phonePh, { inputMode: "tel" })}
             </div>
