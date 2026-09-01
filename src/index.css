@@ -133,6 +133,13 @@ input::placeholder {
   .mwoa-nav-links {
     display: none !important;
   }
+  .mwoa-nav-order {
+    display: none !important;
+  }
+  .mwoa-nav {
+    padding: 12px 20px !important;
+    gap: 12px !important;
+  }
   .mwoa-hero {
     grid-template-columns: 1fr !important;
     padding: 128px 24px 70px !important;
