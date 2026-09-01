@@ -1,4 +1,4 @@
-import { readOrdersCsv, parseOrdersFromCsv, updateOrderStatus } from "../lib/orders_storage.js";
+import { readOrdersCsvAsync, parseOrdersFromCsv, updateOrderStatus } from "../lib/orders_storage.js";
 
 export default async function handler(req, res) {
   // Handle POST/PATCH to update order status
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_orderId_or_status" });
     }
 
-    const result = updateOrderStatus(orderId, status);
+    const result = await updateOrderStatus(orderId, status);
     return res.status(result.ok ? 200 : 400).json(result);
   }
 
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   // 1. Raw CSV Download
   if (format === "csv" || download === "1") {
-    const csvContent = readOrdersCsv();
+    const csvContent = await readOrdersCsvAsync();
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", 'attachment; filename="mwoa_orders.csv"');
     res.status(200);
@@ -37,7 +37,8 @@ export default async function handler(req, res) {
   }
 
   // 2. JSON API
-  const orders = parseOrdersFromCsv();
+  const rawCsv = await readOrdersCsvAsync();
+  const orders = parseOrdersFromCsv(rawCsv);
   if (format === "json" || (req.headers.accept || "").includes("application/json")) {
     return res.status(200).json({
       ok: true,
