@@ -28,10 +28,10 @@ export default function AdminOrdersModal({ open, onClose }) {
 
   // Price per gram & currency settings
   const [pricePerGram, setPricePerGram] = useState(() => {
-    return Number(localStorage.getItem("mwoa_price_per_gram")) || 40;
+    return Number(localStorage.getItem("mwoa_price_per_gram")) || 400;
   });
   const [currency, setCurrency] = useState(() => {
-    return localStorage.getItem("mwoa_currency") || "USD";
+    return localStorage.getItem("mwoa_currency") || "MAD";
   });
 
   const handlePriceChange = (val) => {
@@ -247,9 +247,9 @@ export default function AdminOrdersModal({ open, onClose }) {
                   outline: "none",
                 }}
               >
-                <option value="USD">$ USD</option>
-                <option value="MAD">MAD (درهم)</option>
-                <option value="SAR">SAR (ريال)</option>
+                <option value="MAD">MAD (درهم مغربي)</option>
+                <option value="SAR">SAR (ريال سعودي)</option>
+                <option value="USD">$ USD (دولار)</option>
               </select>
             </div>
 

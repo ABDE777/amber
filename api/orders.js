@@ -320,14 +320,14 @@ export default async function handler(req, res) {
         <div class="brand-sub">MOROCCAN WORLD OF AMBER (MWOA) · FINANCIAL & REVENUE ANALYTICS</div>
       </div>
       <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
-        <!-- Price Per Gram Config -->
+        <!-- Price Per Gram Config (Defaulted to Moroccan Dirham MAD) -->
         <div style="display:flex; align-items:center; gap:6px; background:#1c1011; padding:4px 8px; border-radius:6px; border:1px solid rgba(212,175,55,.3);">
           <span style="font-size:11px; color:#D4AF37;" id="lblPricePerGram">سعر الغرام:</span>
-          <input type="number" id="inputPrice" value="40" onchange="onPriceChange(this.value)" style="width:48px; padding:3px 4px; background:#2a1b1c; border:1px solid rgba(212,175,55,.4); border-radius:4px; color:#FFE9A8; font-size:13px; font-weight:bold; text-align:center; outline:none;">
+          <input type="number" id="inputPrice" value="400" onchange="onPriceChange(this.value)" style="width:58px; padding:3px 4px; background:#2a1b1c; border:1px solid rgba(212,175,55,.4); border-radius:4px; color:#FFE9A8; font-size:13px; font-weight:bold; text-align:center; outline:none;">
           <select id="selectCurr" onchange="onCurrChange(this.value)" style="padding:3px 4px; background:#2a1b1c; border:1px solid rgba(212,175,55,.4); border-radius:4px; color:#D4AF37; font-size:12px; font-weight:bold; outline:none;">
-            <option value="USD">$ USD</option>
-            <option value="MAD">MAD (درهم)</option>
-            <option value="SAR">SAR (ريال)</option>
+            <option value="MAD" selected>MAD (درهم مغربي)</option>
+            <option value="SAR">SAR (ريال سعودي)</option>
+            <option value="USD">$ USD (دولار)</option>
           </select>
         </div>
 
@@ -396,8 +396,8 @@ export default async function handler(req, res) {
   <script>
     let ordersData = ${ordersJson};
     let currentActiveId = null;
-    let pricePerGram = Number(localStorage.getItem('mwoa_price_per_gram')) || 40;
-    let currency = localStorage.getItem('mwoa_currency') || 'USD';
+    let pricePerGram = Number(localStorage.getItem('mwoa_price_per_gram')) || 400;
+    let currency = localStorage.getItem('mwoa_currency') || 'MAD';
 
     document.getElementById('inputPrice').value = pricePerGram;
     document.getElementById('selectCurr').value = currency;
