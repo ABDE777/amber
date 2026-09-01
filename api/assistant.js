@@ -1,5 +1,6 @@
-  import { notifyAdmin } from "../lib/notify.js";
+import { notifyAdmin } from "../lib/notify.js";
 import { isPromptAttack } from "../lib/guard.js";
+import { formatPhoneWithCountry } from "../lib/countries.js";
 
 // POST /api/assistant  { messages: [{role, content}], lang }
 // A guided order assistant running on Groq (OpenAI-compatible API). Chats with
@@ -27,8 +28,9 @@ function isValidEmail(email) {
   return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(String(email || "").trim());
 }
 
-function isValidPhone(phone) {
-  const digits = String(phone || "").replace(/[^0-9]/g, "");
+function isValidPhone(phone, countryName) {
+  const formatted = formatPhoneWithCountry(phone, countryName);
+  const digits = String(formatted || "").replace(/[^0-9]/g, "");
   return digits.length >= 8 && digits.length <= 15;
 }
 
@@ -38,27 +40,28 @@ const systemPrompt = (lang) => {
 
 Product: natural raw ambergris (عنبر الحوت), sold by the gram. Do NOT state prices.
 
-You MUST collect ALL 6 of these fields before calling submit_order. Track what you have collected:
+You MUST collect ALL 6 of these fields before calling submit_order:
   [1] Full Name (الاسم الكامل)
   [2] Quantity in grams (الكمية بالغرام - رقم موجب)
   [3] Country of Residence (بلد الإقامة)
   [4] Country of Delivery (بلد التوصيل)
-  [5] Phone number (رقم هاتف صالح يحتوي على رمز الدولة و 8 أرقام على الأقل)
-  [6] Email address (بريد إلكتروني صالح مثل user@example.com)
+  [5] Phone number (رقم الهاتف)
+  [6] Email address (البريد الإلكتروني)
 
-STRICT RULES:
-- NEVER call submit_order unless ALL 6 fields are collected AND VALID.
-- VALIDATION:
-  * Email MUST be a valid email format containing @ and a domain (e.g. name@domain.com). If invalid, ask the customer politely to correct it.
-  * Phone MUST be a valid phone number with country dial code (e.g. +212 600000000). If invalid, ask the customer politely to provide a valid phone number.
-- Ask for fields ONE or TWO at a time. After getting name and quantity, ask for Country of Residence next.
-- When the user provides a country name (المغرب, Morocco, Qatar, قطر, etc.) accept it immediately as the answer.
-- When asking for Country of Residence OR Country of Delivery, append '[ASK_COUNTRY]' at the very end of your reply.
-- Do NOT list countries in text. The UI has a dropdown.
-- Keep replies to 1-2 sentences.
-- After getting country of delivery, ask for Phone AND Email together.
-- After getting all 6 valid fields, show a clear summary and ask for final confirmation.
-- Only after confirmation call submit_order with all 6 fields filled.`;
+IMPORTANT PHONE & EMAIL RULES:
+- If the customer enters a local phone number without country code (e.g. 0631883412 or 631883412 or 0501234567), ACCEPT IT IMMEDIATELY! The system automatically applies the dial code of their Country of Residence.
+- NEVER reject a phone number just because it lacks a '+' if it has at least 8 digits.
+- Email must be a valid email (e.g. user@example.com).
+
+STRICT WORKFLOW:
+1. Ask for fields ONE or TWO at a time. After name and quantity, ask for Country of Residence next.
+2. When the user provides a country name, accept it immediately as the answer.
+3. When asking for Country of Residence OR Country of Delivery, append '[ASK_COUNTRY]' at the very end of your reply.
+4. Do NOT list countries in text. The UI has a dropdown.
+5. Keep replies to 1-2 sentences.
+6. After country of delivery, ask for Phone AND Email together.
+7. Once all 6 valid fields are collected, show a clear summary and ask for final confirmation.
+8. Only after confirmation call submit_order with all 6 fields.`;
 };
 
 // OpenAI-style tool definition (Groq is OpenAI-compatible).
@@ -173,14 +176,17 @@ export default async function handler(req, res) {
               args = {};
             }
 
+            // Format phone with country of residence if country code is omitted
+            const formattedPhone = formatPhoneWithCountry(args.phone, args.country_residence);
+
             // Server-side validation: reject if any required field is empty or invalid
             const missing = [];
             if (!args.name || String(args.name).trim().length < 2) missing.push("Full Name (الاسم الكامل)");
             if (!args.qty || Number(args.qty) <= 0) missing.push("Quantity in grams (الكمية بالغرام)");
             if (!args.country_residence || String(args.country_residence).trim().length < 2) missing.push("Country of Residence (بلد الإقامة)");
             if (!args.country_delivery || String(args.country_delivery).trim().length < 2) missing.push("Country of Delivery (بلد التوصيل)");
-            if (!isValidPhone(args.phone)) missing.push("Valid Phone Number with country code (رقم هاتف صالح مع رمز الدولة)");
-            if (!isValidEmail(args.email)) missing.push("Valid Email Address (بريد إلكتروني صالح)");
+            if (!isValidPhone(formattedPhone, args.country_residence)) missing.push("Valid Phone Number (رقم هاتف صالح لا يقل عن 8 أرقام)");
+            if (!isValidEmail(args.email)) missing.push("Valid Email Address (بريد إلكتروني صالح مثل user@example.com)");
 
             if (missing.length > 0) {
               console.warn("[Assistant] submit_order rejected due to invalid/missing fields:", missing);
@@ -195,7 +201,7 @@ export default async function handler(req, res) {
                   name: args.name,
                   qty: args.qty,
                   email: args.email,
-                  phone: args.phone,
+                  phone: formattedPhone,
                   country_residence: args.country_residence,
                   country_delivery: args.country_delivery,
                 },
