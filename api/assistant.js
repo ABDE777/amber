@@ -29,19 +29,25 @@ const systemPrompt = (lang) => {
 
 Product: natural raw ambergris (عنبر الحوت), sold by the gram. Do NOT state prices.
 
-CRITICAL RULES — follow exactly:
-1. Collect EXACTLY these 6 fields. Ask for them ONE or TWO at a time. NEVER skip ahead.
-   - Full Name
-   - Quantity in grams (must be a number)
-   - Country of Residence
-   - Country of Delivery
-   - Phone number (include country dial code)
-   - Email address
-2. When the user's message contains a country name (e.g. Morocco, المغرب, Saudi Arabia, قطر, etc.) — accept it as the country answer immediately. Do NOT ask for the same field again.
-3. When asking for Country of Residence OR Country of Delivery, you MUST append '[ASK_COUNTRY]' at the very end of your reply — nothing after it.
-4. Do NOT list countries in your text. The UI shows a dropdown automatically.
-5. Keep every reply to 1-2 sentences maximum.
-6. Once ALL 6 fields are collected: summarize them for confirmation. After user confirms, call submit_order immediately.`;
+You MUST collect ALL 6 of these fields before calling submit_order. Track what you have collected:
+  [1] Full Name
+  [2] Quantity in grams (a positive number)
+  [3] Country of Residence
+  [4] Country of Delivery
+  [5] Phone number (with country dial code, e.g. +212...)
+  [6] Email address (must contain @)
+
+STRICT RULES:
+- NEVER call submit_order unless ALL 6 fields have been explicitly provided by the user in this conversation.
+- If phone or email is missing, you MUST ask for them before submitting.
+- Ask for fields ONE or TWO at a time. After getting name and quantity, ask for Country of Residence next.
+- When the user provides a country name (المغرب, Morocco, Qatar, قطر, etc.) accept it immediately as the answer.
+- When asking for Country of Residence OR Country of Delivery, append '[ASK_COUNTRY]' at the very end of your reply.
+- Do NOT list countries in text. The UI has a dropdown.
+- Keep replies to 1-2 sentences.
+- After getting country of delivery, ask for Phone AND Email together.
+- After getting all 6, show a numbered summary and ask for confirmation.
+- Only after confirmation call submit_order with all 6 fields filled.`;
 };
 
 // OpenAI-style tool definition (Groq is OpenAI-compatible).
@@ -159,20 +165,39 @@ export default async function handler(req, res) {
             } catch {
               args = {};
             }
-            const r = await notifyAdmin(
-              {
-                name: args.name,
-                qty: args.qty,
-                email: args.email,
-                phone: args.phone,
-                country_residence: args.country_residence,
-                country_delivery: args.country_delivery,
-              },
-              lang
-            );
-            ordered = true;
-            lastOrderId = r.orderId;
-            output = JSON.stringify({ received: true, order_id: r.orderId, delivered: r.delivered, configured: r.configured });
+
+            // Server-side validation: reject if any required field is empty
+            const missing = [];
+            if (!args.name || String(args.name).trim().length < 2) missing.push("name");
+            if (!args.qty || Number(args.qty) <= 0) missing.push("qty");
+            if (!args.email || !String(args.email).includes("@")) missing.push("email");
+            if (!args.phone || String(args.phone).replace(/[^0-9]/g, "").length < 7) missing.push("phone");
+            if (!args.country_residence || String(args.country_residence).trim().length < 2) missing.push("country_residence");
+            if (!args.country_delivery || String(args.country_delivery).trim().length < 2) missing.push("country_delivery");
+
+            if (missing.length > 0) {
+              console.warn("[Assistant] submit_order called with missing fields:", missing);
+              output = JSON.stringify({
+                error: "incomplete_order",
+                missing,
+                message: `Cannot submit order. The following fields are still missing: ${missing.join(", ")}. Please ask the customer for these fields first.`
+              });
+            } else {
+              const r = await notifyAdmin(
+                {
+                  name: args.name,
+                  qty: args.qty,
+                  email: args.email,
+                  phone: args.phone,
+                  country_residence: args.country_residence,
+                  country_delivery: args.country_delivery,
+                },
+                lang
+              );
+              ordered = true;
+              lastOrderId = r.orderId;
+              output = JSON.stringify({ received: true, order_id: r.orderId, delivered: r.delivered, configured: r.configured });
+            }
           }
           messages.push({ role: "tool", tool_call_id: tc.id, content: output });
         }
