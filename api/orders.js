@@ -46,22 +46,7 @@ export default async function handler(req, res) {
     });
   }
 
-  // 3. Simplified Clean Luxury Dashboard with Revenue Breakdown Cards
-  const totalOrders = orders.length;
-  const totalGrams = orders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
-
-  const paidOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "paid");
-  const paidCount = paidOrders.length;
-  const paidGrams = paidOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
-
-  const pendingOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "pending");
-  const pendingCount = pendingOrders.length;
-  const pendingGrams = pendingOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
-
-  const shippedOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "shipped");
-  const shippedCount = shippedOrders.length;
-  const shippedGrams = shippedOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
-
+  // 3. Simplified Clean Luxury Dashboard with Money & Revenue Cards
   const rowsHtml =
     orders.length === 0
       ? `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #8d8578;" data-i18n="noOrders">لا توجد طلبات مسجلة حتى الآن</td></tr>`
@@ -102,10 +87,10 @@ export default async function handler(req, res) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitle">سجل ومعاينة الطلبات · Moroccan World of Amber (MWOA)</title>
+  <title id="pageTitle">سجل وإحصائيات الأموال والطلبات · Moroccan World of Amber (MWOA)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Mono:wght@400;600&family=Karla:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Mono:wght@400;600;700&family=Karla:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -142,7 +127,7 @@ export default async function handler(req, res) {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 10px 16px;
+      padding: 8px 14px;
       background: transparent;
       color: #D4AF37;
       font-weight: 700;
@@ -158,11 +143,11 @@ export default async function handler(req, res) {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 22px;
+      padding: 10px 18px;
       background: #990000;
       color: #FFE9A8;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13px;
       border-radius: 6px;
       text-decoration: none;
       border: 1px solid rgba(255,184,0,.4);
@@ -180,14 +165,14 @@ export default async function handler(req, res) {
     }
     .stat-card {
       background: #2a1c1d;
-      border: 1px solid rgba(212,175,55,.25);
+      border: 1px solid rgba(212,175,55,.3);
       border-radius: 10px;
       padding: 16px 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,.3);
     }
-    .stat-label { font-size: 12px; color: #8d8578; margin-bottom: 4px; font-weight: 600; }
-    .stat-val { font-size: 24px; font-weight: 700; color: #FFE9A8; font-family: 'IBM Plex Mono', monospace; }
-    .stat-sub { font-size: 11px; color: #c3bbab; margin-top: 4px; }
+    .stat-label { font-size: 12px; margin-bottom: 4px; font-weight: 700; }
+    .stat-val { font-size: 26px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+    .stat-sub { font-size: 11.5px; color: #c3bbab; margin-top: 4px; }
 
     .table-container {
       background: #251819;
@@ -273,7 +258,6 @@ export default async function handler(req, res) {
         <div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span id="mId" style="font-family:monospace; font-size:19px; color:#FFB800; font-weight:bold;"></span>
-            <!-- Prominent Active Status Badge -->
             <span id="mBadgeStatus" style="padding:3px 10px; border-radius:12px; font-size:12px; font-weight:700;"></span>
           </div>
           <div id="mDateTime" style="font-size:12px; color:#8d8578; margin-top:4px;"></div>
@@ -287,7 +271,7 @@ export default async function handler(req, res) {
           <div class="val" id="mName"></div>
         </div>
         <div class="info-card">
-          <div class="lbl" id="mLblQty">⚖️ الكمية المطلوبة</div>
+          <div class="lbl" id="mLblQty">⚖️ الكمية والقيمة</div>
           <div class="val" id="mQty" style="color:#FFB800; font-family:monospace;"></div>
         </div>
         <div class="info-card">
@@ -336,48 +320,59 @@ export default async function handler(req, res) {
   <div class="container">
     <div class="header">
       <div>
-        <div class="brand-title" id="txtTitle">عالم العنبر المغربي · جدول ومعاينة الطلبات</div>
-        <div class="brand-sub">MOROCCAN WORLD OF AMBER (MWOA) · ORDERS & REVENUE</div>
+        <div class="brand-title" id="txtTitle">عالم العنبر المغربي · إحصائيات الإيرادات والأموال</div>
+        <div class="brand-sub">MOROCCAN WORLD OF AMBER (MWOA) · FINANCIAL & REVENUE ANALYTICS</div>
       </div>
       <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
+        <!-- Price Per Gram Config -->
+        <div style="display:flex; align-items:center; gap:6px; background:#1c1011; padding:4px 8px; border-radius:6px; border:1px solid rgba(212,175,55,.3);">
+          <span style="font-size:11px; color:#D4AF37;" id="lblPricePerGram">سعر الغرام:</span>
+          <input type="number" id="inputPrice" value="40" onchange="onPriceChange(this.value)" style="width:48px; padding:3px 4px; background:#2a1b1c; border:1px solid rgba(212,175,55,.4); border-radius:4px; color:#FFE9A8; font-size:13px; font-weight:bold; text-align:center; outline:none;">
+          <select id="selectCurr" onchange="onCurrChange(this.value)" style="padding:3px 4px; background:#2a1b1c; border:1px solid rgba(212,175,55,.4); border-radius:4px; color:#D4AF37; font-size:12px; font-weight:bold; outline:none;">
+            <option value="USD">$ USD</option>
+            <option value="MAD">MAD (درهم)</option>
+            <option value="SAR">SAR (ريال)</option>
+          </select>
+        </div>
+
         <button onclick="toggleLang()" class="btn-lang" id="btnLang">🌐 English</button>
         <a href="/api/orders?format=csv" class="btn-download" id="btnDownload">
           <span>📥</span> تحميل ملف Excel / CSV
         </a>
-        <a href="/" style="display: inline-flex; align-items: center; padding: 12px 18px; background: #382526; color: #ede7da; border-radius: 6px; text-decoration: none; border: 1px solid rgba(212,175,55,.3); font-size: 13px;" id="btnStore">
+        <a href="/" style="display: inline-flex; align-items: center; padding: 10px 16px; background: #382526; color: #ede7da; border-radius: 6px; text-decoration: none; border: 1px solid rgba(212,175,55,.3); font-size: 13px;" id="btnStore">
           المتجر ↗
         </a>
       </div>
     </div>
 
-    <!-- Revenue & Status Stats Cards Grid -->
+    <!-- Revenue Money Stats Cards Grid -->
     <div class="stats-grid">
-      <!-- Total Volume -->
-      <div class="stat-card">
-        <div class="stat-label" id="lblTotalVol">إجمالي حجم الطلبات</div>
-        <div class="stat-val" id="valTotalVol">${totalGrams} g</div>
-        <div class="stat-sub" id="subTotalOrders">${totalOrders} طلبات مسجلة</div>
+      <!-- Total Money Revenue -->
+      <div class="stat-card" style="border-color: rgba(212,175,55,.4);">
+        <div class="stat-label" style="color: #D4AF37;" id="lblTotalVol">💰 إجمالي الإيرادات المتوقعة</div>
+        <div class="stat-val" style="color: #FFE9A8;" id="valTotalRevenue">$0</div>
+        <div class="stat-sub" id="subTotalOrders">0 g • 0 طلبات</div>
       </div>
 
-      <!-- Paid Revenue -->
-      <div class="stat-card" style="border-color: rgba(37,211,102,.35);">
-        <div class="stat-label" style="color: #25D366;" id="lblPaidRevenue">🟢 الطلبات المدفوعة (Paid)</div>
-        <div class="stat-val" style="color: #25D366;" id="valPaidGrams">${paidGrams} g</div>
-        <div class="stat-sub" id="subPaidCount">${paidCount} طلب تم دفعه</div>
+      <!-- Paid Money Revenue -->
+      <div class="stat-card" style="border-color: rgba(37,211,102,.4);">
+        <div class="stat-label" style="color: #25D366;" id="lblPaidRevenue">🟢 الإيرادات المحصلة (تم الدفع)</div>
+        <div class="stat-val" style="color: #25D366;" id="valPaidRevenue">$0</div>
+        <div class="stat-sub" id="subPaidCount">0 g • 0 طلبات</div>
       </div>
 
-      <!-- Pending Revenue -->
-      <div class="stat-card" style="border-color: rgba(255,184,0,.35);">
-        <div class="stat-label" style="color: #FFB800;" id="lblPendingRevenue">🟡 قيد الانتظار (Pending)</div>
-        <div class="stat-val" style="color: #FFB800;" id="valPendingGrams">${pendingGrams} g</div>
-        <div class="stat-sub" id="subPendingCount">${pendingCount} طلب في الانتظار</div>
+      <!-- Pending Money Revenue -->
+      <div class="stat-card" style="border-color: rgba(255,184,0,.4);">
+        <div class="stat-label" style="color: #FFB800;" id="lblPendingRevenue">🟡 الإيرادات المعلقة (في الانتظار)</div>
+        <div class="stat-val" style="color: #FFB800;" id="valPendingRevenue">$0</div>
+        <div class="stat-sub" id="subPendingCount">0 g • 0 طلبات</div>
       </div>
 
-      <!-- Shipped Volume -->
-      <div class="stat-card" style="border-color: rgba(59,130,246,.35);">
-        <div class="stat-label" style="color: #3b82f6;" id="lblShipped">🚚 تم الشحن (Shipped)</div>
-        <div class="stat-val" style="color: #3b82f6;" id="valShippedGrams">${shippedGrams} g</div>
-        <div class="stat-sub" id="subShippedCount">${shippedCount} طلب مشحون</div>
+      <!-- Shipped Value -->
+      <div class="stat-card" style="border-color: rgba(59,130,246,.4);">
+        <div class="stat-label" style="color: #3b82f6;" id="lblShipped">🚚 قيمة الشحنات (تم الشحن)</div>
+        <div class="stat-val" style="color: #3b82f6;" id="valShippedRevenue">$0</div>
+        <div class="stat-sub" id="subShippedCount">0 g • 0 طلبات</div>
       </div>
     </div>
 
@@ -405,6 +400,23 @@ export default async function handler(req, res) {
   <script>
     let ordersData = ${ordersJson};
     let currentActiveId = null;
+    let pricePerGram = Number(localStorage.getItem('mwoa_price_per_gram')) || 40;
+    let currency = localStorage.getItem('mwoa_currency') || 'USD';
+
+    document.getElementById('inputPrice').value = pricePerGram;
+    document.getElementById('selectCurr').value = currency;
+
+    function onPriceChange(val) {
+      pricePerGram = Math.max(0, Number(val) || 0);
+      localStorage.setItem('mwoa_price_per_gram', String(pricePerGram));
+      recalculateStats();
+    }
+
+    function onCurrChange(val) {
+      currency = val;
+      localStorage.setItem('mwoa_currency', val);
+      recalculateStats();
+    }
 
     const STATUS_COLORS = {
       Paid: '#25D366',
@@ -415,19 +427,20 @@ export default async function handler(req, res) {
 
     const I18N = {
       ar: {
-        pageTitle: "سجل ومعاينة الطلبات والإيرادات · Moroccan World of Amber (MWOA)",
-        title: "عالم العنبر المغربي · جدول ومعاينة الطلبات",
+        pageTitle: "سجل وإحصائيات الأموال والطلبات · Moroccan World of Amber (MWOA)",
+        title: "عالم العنبر المغربي · إحصائيات الإيرادات والأموال",
         btnLang: "🌐 English",
         btnDownload: "📥 تحميل ملف Excel / CSV",
         btnStore: "المتجر ↗",
-        totalVol: "إجمالي حجم الطلبات",
-        paidRev: "🟢 الطلبات المدفوعة (Paid)",
-        pendingRev: "🟡 قيد الانتظار (Pending)",
-        shippedLbl: "🚚 تم الشحن (Shipped)",
-        ordersWord: "طلبات مسجلة",
-        paidWord: "طلب تم دفعه",
-        pendingWord: "طلب في الانتظار",
-        shippedWord: "طلب مشحون",
+        priceLbl: "سعر الغرام:",
+        totalRev: "💰 إجمالي الإيرادات المتوقعة",
+        paidRev: "🟢 الإيرادات المحصلة (تم الدفع)",
+        pendingRev: "🟡 الإيرادات المعلقة (في الانتظار)",
+        shippedLbl: "🚚 قيمة الشحنات (تم الشحن)",
+        ordersWord: "طلبات",
+        paidWord: "طلب مدفوع",
+        pendingWord: "في الانتظار",
+        shippedWord: "مشحون",
         searchPh: "🔍 ابحث برقم الطلب، اسم العميل، أو الحالة...",
         thId: "رقم الطلب (ID)",
         thName: "اسم العميل",
@@ -436,7 +449,7 @@ export default async function handler(req, res) {
         viewBtn: "عرض التفاصيل",
         noOrders: "لا توجد طلبات مسجلة حتى الآن",
         lblName: "👤 اسم العميل",
-        lblQty: "⚖️ الكمية المطلوبة",
+        lblQty: "⚖️ الكمية والقيمة",
         lblPhone: "📞 الهاتف",
         lblEmail: "📧 البريد الإلكتروني",
         lblResidence: "🏠 بلد الإقامة",
@@ -451,19 +464,20 @@ export default async function handler(req, res) {
         cancelled: "❌ ملغى"
       },
       en: {
-        pageTitle: "Orders & Revenue Dashboard · Moroccan World of Amber (MWOA)",
-        title: "Moroccan World of Amber · Orders & Revenue",
+        pageTitle: "Revenue & Money Dashboard · Moroccan World of Amber (MWOA)",
+        title: "Moroccan World of Amber · Revenue & Money Analytics",
         btnLang: "🌐 العربية",
         btnDownload: "📥 Download Excel / CSV",
         btnStore: "Storefront ↗",
-        totalVol: "Total Order Volume",
-        paidRev: "🟢 Paid Revenue",
+        priceLbl: "Price/g:",
+        totalRev: "💰 Total App Revenue",
+        paidRev: "🟢 Paid Revenue (Collected)",
         pendingRev: "🟡 Pending Revenue",
-        shippedLbl: "🚚 Shipped Orders",
-        ordersWord: "orders recorded",
-        paidWord: "paid orders",
-        pendingWord: "pending orders",
-        shippedWord: "shipped orders",
+        shippedLbl: "🚚 Shipped Orders Value",
+        ordersWord: "orders",
+        paidWord: "paid",
+        pendingWord: "pending",
+        shippedWord: "shipped",
         searchPh: "🔍 Search by Order ID, name, or status...",
         thId: "Order ID",
         thName: "Customer Name",
@@ -472,7 +486,7 @@ export default async function handler(req, res) {
         viewBtn: "View Details",
         noOrders: "No orders recorded yet",
         lblName: "👤 Customer Name",
-        lblQty: "⚖️ Quantity",
+        lblQty: "⚖️ Weight & Value",
         lblPhone: "📞 Phone",
         lblEmail: "📧 Email",
         lblResidence: "🏠 Residence",
@@ -492,22 +506,34 @@ export default async function handler(req, res) {
 
     function recalculateStats() {
       const d = I18N[currentLang];
+      const sym = currency === 'USD' ? '$' : currency === 'MAD' ? 'DH' : 'SAR';
+
       const totalG = ordersData.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+      const totalMoney = totalG * pricePerGram;
+
       const paidO = ordersData.filter(o => (o.Status || '').toLowerCase() === 'paid');
       const paidG = paidO.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+      const paidMoney = paidG * pricePerGram;
+
       const pendO = ordersData.filter(o => (o.Status || '').toLowerCase() === 'pending');
       const pendG = pendO.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+      const pendMoney = pendG * pricePerGram;
+
       const shipO = ordersData.filter(o => (o.Status || '').toLowerCase() === 'shipped');
       const shipG = shipO.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+      const shipMoney = shipG * pricePerGram;
 
-      document.getElementById('valTotalVol').innerText = totalG + ' g';
-      document.getElementById('subTotalOrders').innerText = ordersData.length + ' ' + d.ordersWord;
-      document.getElementById('valPaidGrams').innerText = paidG + ' g';
-      document.getElementById('subPaidCount').innerText = paidO.length + ' ' + d.paidWord;
-      document.getElementById('valPendingGrams').innerText = pendG + ' g';
-      document.getElementById('subPendingCount').innerText = pendO.length + ' ' + d.pendingWord;
-      document.getElementById('valShippedGrams').innerText = shipG + ' g';
-      document.getElementById('subShippedCount').innerText = shipO.length + ' ' + d.shippedWord;
+      document.getElementById('valTotalRevenue').innerText = totalMoney.toLocaleString() + ' ' + sym;
+      document.getElementById('subTotalOrders').innerText = totalG + ' g • ' + ordersData.length + ' ' + d.ordersWord;
+
+      document.getElementById('valPaidRevenue').innerText = paidMoney.toLocaleString() + ' ' + sym;
+      document.getElementById('subPaidCount').innerText = paidG + ' g • ' + paidO.length + ' ' + d.paidWord;
+
+      document.getElementById('valPendingRevenue').innerText = pendMoney.toLocaleString() + ' ' + sym;
+      document.getElementById('subPendingCount').innerText = pendG + ' g • ' + pendO.length + ' ' + d.pendingWord;
+
+      document.getElementById('valShippedRevenue').innerText = shipMoney.toLocaleString() + ' ' + sym;
+      document.getElementById('subShippedCount').innerText = shipG + ' g • ' + shipO.length + ' ' + d.shippedWord;
     }
 
     function applyLang(lang) {
@@ -522,7 +548,8 @@ export default async function handler(req, res) {
       document.getElementById("btnDownload").innerHTML = "<span>📥</span> " + d.btnDownload.replace("📥 ", "");
       document.getElementById("btnStore").innerText = d.btnStore;
       
-      document.getElementById("lblTotalVol").innerText = d.totalVol;
+      document.getElementById("lblPricePerGram").innerText = d.priceLbl;
+      document.getElementById("lblTotalVol").innerText = d.totalRev;
       document.getElementById("lblPaidRevenue").innerText = d.paidRev;
       document.getElementById("lblPendingRevenue").innerText = d.pendingRev;
       document.getElementById("lblShipped").innerText = d.shippedLbl;
@@ -608,10 +635,13 @@ export default async function handler(req, res) {
       if (!order) return;
       currentActiveId = orderId;
 
+      const sym = currency === 'USD' ? '$' : currency === 'MAD' ? 'DH' : 'SAR';
+      const valMoney = (Number(order.Grams || 0) * pricePerGram).toLocaleString();
+
       document.getElementById("mId").innerText = order.ID;
       document.getElementById("mDateTime").innerText = order.Date + ' — ' + (order.Time || '');
       document.getElementById("mName").innerText = order.Name || '—';
-      document.getElementById("mQty").innerText = (order.Grams || '0') + ' g';
+      document.getElementById("mQty").innerHTML = (order.Grams || '0') + ' g <span style="font-size:13px; color:#fff;">(' + valMoney + ' ' + sym + ')</span>';
       document.getElementById("mEmail").innerText = order.Email || '—';
       document.getElementById("mResidence").innerText = order.Country_Residence || '—';
       document.getElementById("mDelivery").innerText = order.Country_Delivery || '—';
@@ -641,7 +671,6 @@ export default async function handler(req, res) {
         badge.innerText = newStatus;
       }
 
-      // Update local array
       const item = ordersData.find(o => o.ID === orderId);
       if (item) item.Status = newStatus;
 

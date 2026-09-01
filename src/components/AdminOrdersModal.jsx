@@ -26,6 +26,25 @@ export default function AdminOrdersModal({ open, onClose }) {
   const [toastMsg, setToastMsg] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  // Price per gram & currency settings
+  const [pricePerGram, setPricePerGram] = useState(() => {
+    return Number(localStorage.getItem("mwoa_price_per_gram")) || 40;
+  });
+  const [currency, setCurrency] = useState(() => {
+    return localStorage.getItem("mwoa_currency") || "USD";
+  });
+
+  const handlePriceChange = (val) => {
+    const num = Math.max(0, Number(val) || 0);
+    setPricePerGram(num);
+    localStorage.setItem("mwoa_price_per_gram", String(num));
+  };
+
+  const handleCurrencyChange = (c) => {
+    setCurrency(c);
+    localStorage.setItem("mwoa_currency", c);
+  };
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -33,7 +52,6 @@ export default function AdminOrdersModal({ open, onClose }) {
       const data = await res.json();
       if (data.ok && Array.isArray(data.orders)) {
         setOrders(data.orders);
-        // Sync selected order if open
         if (selectedOrder) {
           const updated = data.orders.find((o) => o.ID === selectedOrder.ID);
           if (updated) setSelectedOrder(updated);
@@ -55,7 +73,6 @@ export default function AdminOrdersModal({ open, onClose }) {
   }, [open]);
 
   const handleStatusChange = async (orderId, newStatus) => {
-    // Optimistic UI update
     setOrders((prev) =>
       prev.map((o) => (o.ID === orderId ? { ...o, Status: newStatus } : o))
     );
@@ -95,18 +112,24 @@ export default function AdminOrdersModal({ open, onClose }) {
   });
 
   const totalGrams = orders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+  const totalRevenue = totalGrams * pricePerGram;
   
   const paidOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "paid");
   const paidCount = paidOrders.length;
   const paidGrams = paidOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+  const paidRevenue = paidGrams * pricePerGram;
 
   const pendingOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "pending");
   const pendingCount = pendingOrders.length;
   const pendingGrams = pendingOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+  const pendingRevenue = pendingGrams * pricePerGram;
 
   const shippedOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "shipped");
   const shippedCount = shippedOrders.length;
   const shippedGrams = shippedOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+  const shippedRevenue = shippedGrams * pricePerGram;
+
+  const currSymbol = currency === "USD" ? "$" : currency === "MAD" ? "DH" : "SAR";
 
   const curModalStatus = selectedOrder?.Status || "Pending";
   const curModalColor = STATUS_COLORS[curModalStatus] || "#FFB800";
@@ -130,7 +153,7 @@ export default function AdminOrdersModal({ open, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(920px, 96vw)",
+          width: "min(960px, 96vw)",
           maxHeight: "90vh",
           background: C.panel,
           border: "1px solid rgba(212,175,55,.45)",
@@ -168,7 +191,7 @@ export default function AdminOrdersModal({ open, onClose }) {
         {/* Header */}
         <div
           style={{
-            padding: "20px 24px",
+            padding: "18px 24px",
             background: "linear-gradient(180deg, #3d2224 0%, #251819 100%)",
             borderBottom: "1px solid rgba(212,175,55,.3)",
             display: "flex",
@@ -180,7 +203,7 @@ export default function AdminOrdersModal({ open, onClose }) {
         >
           <div>
             <div style={{ fontFamily: fonts.display, fontSize: 22, fontWeight: 700, color: C.paper }}>
-              {isAr ? "📊 جدول ومعاينة الطلبات" : "📊 Orders & Revenue Dashboard"}
+              {isAr ? "📊 إحصائيات الإيرادات والأموال والطلبات" : "📊 Revenue & Money Analytics"}
             </div>
             <div style={{ fontFamily: fonts.ui, fontSize: 13, color: C.body, marginTop: 4 }}>
               {isAr
@@ -190,17 +213,57 @@ export default function AdminOrdersModal({ open, onClose }) {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {/* Price Controller */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#1c1011", padding: "4px 8px", borderRadius: 6, border: "1px solid rgba(212,175,55,.3)" }}>
+              <span style={{ fontSize: 11, color: C.gold }}>{isAr ? "سعر الغرام:" : "Price/g:"}</span>
+              <input
+                type="number"
+                value={pricePerGram}
+                onChange={(e) => handlePriceChange(e.target.value)}
+                style={{
+                  width: 50,
+                  padding: "3px 6px",
+                  background: "#2a1b1c",
+                  border: "1px solid rgba(212,175,55,.4)",
+                  borderRadius: 4,
+                  color: "#FFE9A8",
+                  fontSize: 13,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  outline: "none",
+                }}
+              />
+              <select
+                value={currency}
+                onChange={(e) => handleCurrencyChange(e.target.value)}
+                style={{
+                  padding: "3px 4px",
+                  background: "#2a1b1c",
+                  border: "1px solid rgba(212,175,55,.4)",
+                  borderRadius: 4,
+                  color: C.gold,
+                  fontSize: 12,
+                  fontWeight: "bold",
+                  outline: "none",
+                }}
+              >
+                <option value="USD">$ USD</option>
+                <option value="MAD">MAD (درهم)</option>
+                <option value="SAR">SAR (ريال)</option>
+              </select>
+            </div>
+
             <button
               onClick={() => setLang(isAr ? "en" : "ar")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "8px 14px",
+                padding: "8px 12px",
                 background: "transparent",
                 border: "1px solid rgba(212,175,55,.4)",
                 color: C.gold,
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: 700,
                 cursor: "pointer",
                 borderRadius: 6,
@@ -215,11 +278,11 @@ export default function AdminOrdersModal({ open, onClose }) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "8px 16px",
+                padding: "8px 14px",
                 background: C.ruby,
                 color: "#FFE9A8",
                 fontWeight: 700,
-                fontSize: 13,
+                fontSize: 12.5,
                 borderRadius: 6,
                 textDecoration: "none",
                 border: "1px solid rgba(255,184,0,.4)",
@@ -231,7 +294,7 @@ export default function AdminOrdersModal({ open, onClose }) {
               onClick={fetchOrders}
               disabled={loading}
               style={{
-                padding: "8px 14px",
+                padding: "8px 12px",
                 background: "#382526",
                 color: C.paper,
                 border: "1px solid rgba(212,175,55,.3)",
@@ -258,63 +321,63 @@ export default function AdminOrdersModal({ open, onClose }) {
           </div>
         </div>
 
-        {/* Revenue & Status Stats Cards Grid */}
-        <div style={{ padding: "16px 24px 8px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 }}>
-          {/* Total Volume */}
-          <div style={{ background: "#2a1c1d", border: "1px solid rgba(212,175,55,.25)", borderRadius: 10, padding: "14px 16px" }}>
-            <div style={{ fontSize: 11, color: "#8d8578", marginBottom: 4 }}>
-              {isAr ? "إجمالي حجم الطلبات" : "Total Volume / Orders"}
+        {/* FINANCIAL REVENUE STATS CARDS */}
+        <div style={{ padding: "16px 24px 8px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+          {/* Total Money Revenue */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(212,175,55,.35)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#D4AF37", marginBottom: 4, fontWeight: 700 }}>
+              💰 {isAr ? "إجمالي الإيرادات المتوقعة" : "Total App Revenue"}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#FFE9A8", fontFamily: "monospace" }}>
-              {totalGrams} g
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#FFE9A8", fontFamily: "monospace" }}>
+              {totalRevenue.toLocaleString()} {currSymbol}
             </div>
-            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
-              {orders.length} {isAr ? "طلبات مسجلة" : "orders"}
-            </div>
-          </div>
-
-          {/* Paid Revenue */}
-          <div style={{ background: "#2a1c1d", border: "1px solid rgba(37,211,102,.3)", borderRadius: 10, padding: "14px 16px" }}>
-            <div style={{ fontSize: 11, color: "#25D366", marginBottom: 4, fontWeight: 600 }}>
-              {isAr ? "🟢 الطلبات المدفوعة (Paid)" : "🟢 Paid Revenue"}
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#25D366", fontFamily: "monospace" }}>
-              {paidGrams} g
-            </div>
-            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
-              {paidCount} {isAr ? "طلب تم دفعه" : "paid orders"}
+            <div style={{ fontSize: 11, color: C.body, marginTop: 4 }}>
+              {totalGrams} g • {orders.length} {isAr ? "طلبات" : "orders"}
             </div>
           </div>
 
-          {/* Pending Revenue */}
-          <div style={{ background: "#2a1c1d", border: "1px solid rgba(255,184,0,.3)", borderRadius: 10, padding: "14px 16px" }}>
-            <div style={{ fontSize: 11, color: "#FFB800", marginBottom: 4, fontWeight: 600 }}>
-              {isAr ? "🟡 قيد الانتظار (Pending)" : "🟡 Pending Revenue"}
+          {/* Paid Money Revenue */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(37,211,102,.4)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#25D366", marginBottom: 4, fontWeight: 700 }}>
+              🟢 {isAr ? "الإيرادات المحصلة (تم الدفع)" : "Paid Revenue (Collected)"}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#FFB800", fontFamily: "monospace" }}>
-              {pendingGrams} g
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#25D366", fontFamily: "monospace" }}>
+              {paidRevenue.toLocaleString()} {currSymbol}
             </div>
-            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
-              {pendingCount} {isAr ? "طلب في الانتظار" : "pending orders"}
+            <div style={{ fontSize: 11, color: C.body, marginTop: 4 }}>
+              {paidGrams} g • {paidCount} {isAr ? "طلب مدفوع" : "paid"}
             </div>
           </div>
 
-          {/* Shipped */}
-          <div style={{ background: "#2a1c1d", border: "1px solid rgba(59,130,246,.3)", borderRadius: 10, padding: "14px 16px" }}>
-            <div style={{ fontSize: 11, color: "#3b82f6", marginBottom: 4, fontWeight: 600 }}>
-              {isAr ? "🚚 تم الشحن (Shipped)" : "🚚 Shipped"}
+          {/* Pending Money Revenue */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(255,184,0,.4)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#FFB800", marginBottom: 4, fontWeight: 700 }}>
+              🟡 {isAr ? "الإيرادات المعلقة (في الانتظار)" : "Pending Revenue"}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#3b82f6", fontFamily: "monospace" }}>
-              {shippedGrams} g
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#FFB800", fontFamily: "monospace" }}>
+              {pendingRevenue.toLocaleString()} {currSymbol}
             </div>
-            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
-              {shippedCount} {isAr ? "طلب مشحون" : "shipped orders"}
+            <div style={{ fontSize: 11, color: C.body, marginTop: 4 }}>
+              {pendingGrams} g • {pendingCount} {isAr ? "في الانتظار" : "pending"}
+            </div>
+          </div>
+
+          {/* Shipped Value */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(59,130,246,.4)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#3b82f6", marginBottom: 4, fontWeight: 700 }}>
+              🚚 {isAr ? "قيمة الشحنات (تم الشحن)" : "Shipped Value"}
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#3b82f6", fontFamily: "monospace" }}>
+              {shippedRevenue.toLocaleString()} {currSymbol}
+            </div>
+            <div style={{ fontSize: 11, color: C.body, marginTop: 4 }}>
+              {shippedGrams} g • {shippedCount} {isAr ? "مشحون" : "shipped"}
             </div>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div style={{ padding: "10px 24px 14px", background: "transparent" }}>
+        <div style={{ padding: "10px 24px 12px", background: "transparent" }}>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -465,7 +528,6 @@ export default function AdminOrdersModal({ open, onClose }) {
                     <span style={{ fontFamily: "monospace", fontSize: 19, color: C.amber, fontWeight: "bold" }}>
                       {selectedOrder.ID}
                     </span>
-                    {/* Active Status Badge in Header */}
                     <span
                       style={{
                         padding: "3px 10px",
@@ -507,8 +569,10 @@ export default function AdminOrdersModal({ open, onClose }) {
                 </div>
 
                 <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
-                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "⚖️ الكمية المطلوبة" : "⚖️ Quantity"}</div>
-                  <div style={{ fontWeight: 700, color: C.amber, fontFamily: "monospace", fontSize: 16 }}>{selectedOrder.Grams} g</div>
+                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "⚖️ الكمية والقيمة" : "⚖️ Weight & Value"}</div>
+                  <div style={{ fontWeight: 700, color: C.amber, fontFamily: "monospace", fontSize: 16 }}>
+                    {selectedOrder.Grams} g <span style={{ fontSize: 13, color: "#fff" }}>({(Number(selectedOrder.Grams || 0) * pricePerGram).toLocaleString()} {currSymbol})</span>
+                  </div>
                 </div>
 
                 <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
