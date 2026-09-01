@@ -293,11 +293,6 @@ export default async function handler(req, res) {
         </div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; background:#1f1415; padding:8px 14px; border-radius:8px;">
-        <span style="font-size:12px; color:#8d8578;" id="mLblSource">مصدر الطلب:</span>
-        <span id="mSource" style="padding:3px 10px; border-radius:10px; font-size:12px; font-weight:bold; background:#7a0000; color:#FFE9A8;"></span>
-      </div>
-
       <!-- Live Status Switcher in Modal -->
       <div style="background:#1c1112; padding:14px; border-radius:8px; border:1px solid rgba(212,175,55,.3);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -646,7 +641,6 @@ export default async function handler(req, res) {
       document.getElementById("mEmail").innerText = order.Email || '—';
       document.getElementById("mResidence").innerText = order.Country_Residence || '—';
       document.getElementById("mDelivery").innerText = order.Country_Delivery || '—';
-      document.getElementById("mSource").innerText = order.Source || 'AI Assistant';
 
       const cleanPhone = (order.Phone || '').replace(/[^0-9]/g, '');
       document.getElementById("mPhone").innerHTML = (order.Phone || '—') + (cleanPhone ? ' <a href="https://wa.me/' + cleanPhone + '" target="_blank" style="margin-right:8px; margin-left:8px; background:#25D366; color:#fff; padding:2px 8px; border-radius:4px; font-size:11px; text-decoration:none; font-weight:bold;">💬 WhatsApp</a>' : '');

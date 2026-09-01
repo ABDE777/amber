@@ -616,23 +616,6 @@ export default function AdminOrdersModal({ open, onClose }) {
                 </div>
               </div>
 
-              {/* Source Badge */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#1f1415", padding: "8px 14px", borderRadius: 8 }}>
-                <span style={{ fontSize: 12, color: "#8d8578" }}>{isAr ? "مصدر الطلب:" : "Order Source:"}</span>
-                <span
-                  style={{
-                    padding: "3px 10px",
-                    borderRadius: 10,
-                    fontSize: 12,
-                    fontWeight: "bold",
-                    background: selectedOrder.Source === "Order Form" ? "#7a0000" : "#2d4428",
-                    color: "#FFE9A8",
-                  }}
-                >
-                  {selectedOrder.Source || "AI Assistant"}
-                </span>
-              </div>
-
               {/* Status Selector with Highlighted Active State */}
               <div style={{ background: "#1c1112", padding: "14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.3)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
