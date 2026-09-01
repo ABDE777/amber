@@ -6,7 +6,7 @@ import { LangProvider, useLang } from "./i18n.jsx";
 import OrderModal from "./components/OrderModal.jsx";
 import AmberMotionBackground from "./components/AmberMotionBackground.jsx";
 import AdminOrdersModal from "./components/AdminOrdersModal.jsx";
-import { COUNTRIES, calculatePrice } from "../lib/countries.js";
+import { COUNTRIES, calculatePrice, useLiveRates } from "../lib/countries.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -468,10 +468,11 @@ function Order({ onOrder }) {
   const { t, fonts, dir } = useLang();
   const isAr = dir === "rtl";
   const h2 = useH2();
+  const liveRates = useLiveRates();
   const [selectedCountry, setSelectedCountry] = useState(isAr ? "المغرب" : "Morocco");
   const [grams, setGrams] = useState(10);
 
-  const priceEst = calculatePrice(grams, selectedCountry, isAr);
+  const priceEst = calculatePrice(grams, selectedCountry, isAr, liveRates);
 
   return (
     <section id="buy" className="mwoa-section" style={{ padding: "120px 60px", background: "radial-gradient(1000px 620px at 50% 0%, #a62b2b 0%, #642a2b 34%, #342726 72%)" }}>

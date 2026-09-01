@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { config } from "../config.js";
 import { useLang } from "../i18n.jsx";
-import { COUNTRIES, formatPhoneWithCountry, calculatePrice, getCountryInfo } from "../../lib/countries.js";
+import { COUNTRIES, formatPhoneWithCountry, calculatePrice, getCountryInfo, useLiveRates } from "../../lib/countries.js";
 
 const C = {
   gold: "#D4AF37",
@@ -17,6 +17,7 @@ export default function OrderModal({ open, onClose }) {
   const { t, fonts, dir, lang } = useLang();
   const m = t.modal;
   const isAr = dir === "rtl";
+  const liveRates = useLiveRates();
 
   const [form, setForm] = useState({
     name: "",
@@ -31,7 +32,7 @@ export default function OrderModal({ open, onClose }) {
   const [orderId, setOrderId] = useState("");
 
   const targetCountry = form.country_delivery || form.country_residence;
-  const priceEstimate = form.qty && Number(form.qty) > 0 ? calculatePrice(form.qty, targetCountry, isAr) : null;
+  const priceEstimate = form.qty && Number(form.qty) > 0 ? calculatePrice(form.qty, targetCountry, isAr, liveRates) : null;
 
   useEffect(() => {
     if (!open) {
