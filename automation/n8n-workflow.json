@@ -1,0 +1,109 @@
+{
+  "name": "MWOA — Order automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mwoa-order",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b1f0a001-0001-4a01-9a01-000000000001",
+      "name": "Order Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-260, 300],
+      "webhookId": "mwoa-order"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "a1", "name": "name", "value": "={{ $json.body.name }}", "type": "string" },
+            { "id": "a2", "name": "qty", "value": "={{ $json.body.qty }}", "type": "string" },
+            { "id": "a3", "name": "email", "value": "={{ $json.body.email }}", "type": "string" },
+            { "id": "a4", "name": "phone", "value": "={{ $json.body.phone }}", "type": "string" },
+            { "id": "a4b", "name": "phoneDigits", "value": "={{ $json.body.phoneDigits }}", "type": "string" },
+            { "id": "a5", "name": "country_residence", "value": "={{ $json.body.country_residence }}", "type": "string" },
+            { "id": "a6", "name": "country_delivery", "value": "={{ $json.body.country_delivery }}", "type": "string" },
+            { "id": "a7", "name": "lang", "value": "={{ $json.body.lang }}", "type": "string" },
+            { "id": "a8", "name": "status", "value": "new", "type": "string" },
+            { "id": "a9", "name": "createdAt", "value": "={{ $json.body.createdAt || $now.toISO() }}", "type": "string" },
+            {
+              "id": "a10",
+              "name": "whatsappText",
+              "value": "={{ $json.body.lang === 'en' ? ('Hello ' + $json.body.name + ' 👋\\nWe received your MWOA order:\\n• Ambergris: ' + $json.body.qty + ' g\\n• Delivery: ' + $json.body.country_delivery + '\\n\\nReply to confirm and choose a payment method:\\n1) Cash on delivery\\n2) Bank transfer (RIB)\\n3) CashPlus / Wafacash') : ('مرحباً ' + $json.body.name + ' 👋\\nوصلنا طلبك من MWOA:\\n• عنبر الحوت: ' + $json.body.qty + ' غرام\\n• التوصيل: ' + $json.body.country_delivery + '\\n\\nردّ لتأكيد الطلب واختيار طريقة الدفع:\\n1) الدفع عند الاستلام\\n2) تحويل بنكي (RIB)\\n3) كاش بلوس / وفا كاش') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1f0a001-0002-4a01-9a01-000000000002",
+      "name": "Normalize Order",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-40, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "__rl": true, "mode": "list", "value": "" },
+        "sheetName": { "__rl": true, "mode": "list", "value": "" },
+        "columns": { "mappingMode": "autoMapInputData", "matchingColumns": [], "value": {} },
+        "options": {}
+      },
+      "id": "b1f0a001-0003-4a01-9a01-000000000003",
+      "name": "Save to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [200, 200],
+      "notesInFlow": true,
+      "notes": "Order tracking (suivi). Create a sheet with headers: name, qty, email, phone, country_residence, country_delivery, lang, status, createdAt"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "",
+        "recipientPhoneNumber": "={{ $json.phoneDigits }}",
+        "messageType": "text",
+        "textBody": "={{ $json.whatsappText }}",
+        "additionalFields": {}
+      },
+      "id": "b1f0a001-0004-4a01-9a01-000000000004",
+      "name": "WhatsApp to Customer",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [200, 400],
+      "notesInFlow": true,
+      "notes": "First contact needs an approved Meta template. See README."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"received\": true }",
+        "options": {}
+      },
+      "id": "b1f0a001-0005-4a01-9a01-000000000005",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [460, 300]
+    }
+  ],
+  "connections": {
+    "Order Webhook": { "main": [[{ "node": "Normalize Order", "type": "main", "index": 0 }]] },
+    "Normalize Order": {
+      "main": [
+        [
+          { "node": "Save to Google Sheet", "type": "main", "index": 0 },
+          { "node": "WhatsApp to Customer", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Save to Google Sheet": { "main": [[{ "node": "Respond 200", "type": "main", "index": 0 }]] },
+    "WhatsApp to Customer": { "main": [[{ "node": "Respond 200", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}
