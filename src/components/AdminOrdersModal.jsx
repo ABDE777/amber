@@ -24,6 +24,7 @@ export default function AdminOrdersModal({ open, onClose }) {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [toastMsg, setToastMsg] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -32,6 +33,11 @@ export default function AdminOrdersModal({ open, onClose }) {
       const data = await res.json();
       if (data.ok && Array.isArray(data.orders)) {
         setOrders(data.orders);
+        // Sync selected order if open
+        if (selectedOrder) {
+          const updated = data.orders.find((o) => o.ID === selectedOrder.ID);
+          if (updated) setSelectedOrder(updated);
+        }
       }
     } catch (err) {
       console.error("Failed to load orders:", err);
@@ -43,6 +49,8 @@ export default function AdminOrdersModal({ open, onClose }) {
   useEffect(() => {
     if (open) {
       fetchOrders();
+    } else {
+      setSelectedOrder(null);
     }
   }, [open]);
 
@@ -51,6 +59,9 @@ export default function AdminOrdersModal({ open, onClose }) {
     setOrders((prev) =>
       prev.map((o) => (o.ID === orderId ? { ...o, Status: newStatus } : o))
     );
+    if (selectedOrder && selectedOrder.ID === orderId) {
+      setSelectedOrder((prev) => ({ ...prev, Status: newStatus }));
+    }
 
     try {
       const res = await fetch("/api/orders", {
@@ -84,7 +95,21 @@ export default function AdminOrdersModal({ open, onClose }) {
   });
 
   const totalGrams = orders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
-  const paidCount = orders.filter((o) => (o.Status || "").toLowerCase() === "paid").length;
+  
+  const paidOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "paid");
+  const paidCount = paidOrders.length;
+  const paidGrams = paidOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+
+  const pendingOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "pending");
+  const pendingCount = pendingOrders.length;
+  const pendingGrams = pendingOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+
+  const shippedOrders = orders.filter((o) => (o.Status || "").toLowerCase() === "shipped");
+  const shippedCount = shippedOrders.length;
+  const shippedGrams = shippedOrders.reduce((sum, o) => sum + (Number(o.Grams) || 0), 0);
+
+  const curModalStatus = selectedOrder?.Status || "Pending";
+  const curModalColor = STATUS_COLORS[curModalStatus] || "#FFB800";
 
   return (
     <div
@@ -105,7 +130,7 @@ export default function AdminOrdersModal({ open, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(1200px, 96vw)",
+          width: "min(920px, 96vw)",
           maxHeight: "90vh",
           background: C.panel,
           border: "1px solid rgba(212,175,55,.45)",
@@ -155,12 +180,12 @@ export default function AdminOrdersModal({ open, onClose }) {
         >
           <div>
             <div style={{ fontFamily: fonts.display, fontSize: 22, fontWeight: 700, color: C.paper }}>
-              {isAr ? "📊 جدول ومعاينة طلبات الإكسل وتحديث الحالة" : "📊 Admin Orders & Status Manager"}
+              {isAr ? "📊 جدول ومعاينة الطلبات" : "📊 Orders & Revenue Dashboard"}
             </div>
             <div style={{ fontFamily: fonts.ui, fontSize: 13, color: C.body, marginTop: 4 }}>
               {isAr
-                ? `إجمالي الطلبات: ${orders.length} | المدفوعة: ${paidCount} | إجمالي الكمية: ${totalGrams} غرام`
-                : `Total: ${orders.length} | Paid: ${paidCount} | Total Weight: ${totalGrams}g`}
+                ? `إجمالي الطلبات المسجلة: ${orders.length} طلب`
+                : `Total Orders Recorded: ${orders.length}`}
             </div>
           </div>
 
@@ -200,7 +225,7 @@ export default function AdminOrdersModal({ open, onClose }) {
                 border: "1px solid rgba(255,184,0,.4)",
               }}
             >
-              <span>📥</span> {isAr ? "تحميل Excel / CSV" : "Download CSV"}
+              <span>📥</span> {isAr ? "تحميل Excel" : "Download Excel"}
             </a>
             <button
               onClick={fetchOrders}
@@ -215,7 +240,7 @@ export default function AdminOrdersModal({ open, onClose }) {
                 fontSize: 13,
               }}
             >
-              🔄 {isAr ? "تحديث" : "Refresh"}
+              🔄
             </button>
             <button
               onClick={onClose}
@@ -233,12 +258,67 @@ export default function AdminOrdersModal({ open, onClose }) {
           </div>
         </div>
 
+        {/* Revenue & Status Stats Cards Grid */}
+        <div style={{ padding: "16px 24px 8px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 }}>
+          {/* Total Volume */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(212,175,55,.25)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#8d8578", marginBottom: 4 }}>
+              {isAr ? "إجمالي حجم الطلبات" : "Total Volume / Orders"}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#FFE9A8", fontFamily: "monospace" }}>
+              {totalGrams} g
+            </div>
+            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
+              {orders.length} {isAr ? "طلبات مسجلة" : "orders"}
+            </div>
+          </div>
+
+          {/* Paid Revenue */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(37,211,102,.3)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#25D366", marginBottom: 4, fontWeight: 600 }}>
+              {isAr ? "🟢 الطلبات المدفوعة (Paid)" : "🟢 Paid Revenue"}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#25D366", fontFamily: "monospace" }}>
+              {paidGrams} g
+            </div>
+            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
+              {paidCount} {isAr ? "طلب تم دفعه" : "paid orders"}
+            </div>
+          </div>
+
+          {/* Pending Revenue */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(255,184,0,.3)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#FFB800", marginBottom: 4, fontWeight: 600 }}>
+              {isAr ? "🟡 قيد الانتظار (Pending)" : "🟡 Pending Revenue"}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#FFB800", fontFamily: "monospace" }}>
+              {pendingGrams} g
+            </div>
+            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
+              {pendingCount} {isAr ? "طلب في الانتظار" : "pending orders"}
+            </div>
+          </div>
+
+          {/* Shipped */}
+          <div style={{ background: "#2a1c1d", border: "1px solid rgba(59,130,246,.3)", borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ fontSize: 11, color: "#3b82f6", marginBottom: 4, fontWeight: 600 }}>
+              {isAr ? "🚚 تم الشحن (Shipped)" : "🚚 Shipped"}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#3b82f6", fontFamily: "monospace" }}>
+              {shippedGrams} g
+            </div>
+            <div style={{ fontSize: 11, color: C.body, marginTop: 2 }}>
+              {shippedCount} {isAr ? "طلب مشحون" : "shipped orders"}
+            </div>
+          </div>
+        </div>
+
         {/* Search Bar */}
-        <div style={{ padding: "14px 24px", background: "#1f1213", borderBottom: "1px solid rgba(212,175,55,.15)" }}>
+        <div style={{ padding: "10px 24px 14px", background: "transparent" }}>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={isAr ? "🔍 ابحث باسم العميل، الهاتف، البريد، الدولة، أو الحالة..." : "🔍 Search by name, phone, email, country, or status..."}
+            placeholder={isAr ? "🔍 ابحث برقم الطلب، الاسم، أو الحالة..." : "🔍 Search by Order ID, name, or status..."}
             style={{
               width: "100%",
               padding: "10px 14px",
@@ -253,123 +333,91 @@ export default function AdminOrdersModal({ open, onClose }) {
           />
         </div>
 
-        {/* Table Content */}
+        {/* Simplified Table: ONLY ID, Name, Status, Action */}
         <div style={{ flex: 1, overflowY: "auto", overflowX: "auto", padding: "0" }}>
           {loading ? (
             <div style={{ padding: 40, textAlign: "center", color: C.gold, fontSize: 16 }}>
-              {isAr ? "جاري تحميل بيانات الطلبات..." : "Loading orders data..."}
+              {isAr ? "جاري تحميل بيانات الطلبات..." : "Loading orders..."}
             </div>
           ) : filtered.length === 0 ? (
             <div style={{ padding: 50, textAlign: "center", color: "#8d8578", fontSize: 15 }}>
-              {isAr ? "لا توجد طلبات مسجلة تطابق بحثك" : "No orders found"}
+              {isAr ? "لا توجد طلبات مسجلة" : "No orders found"}
             </div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: isAr ? "right" : "left", fontSize: 13.5 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: isAr ? "right" : "left", fontSize: 14 }}>
               <thead>
                 <tr style={{ background: "#2e1c1d", borderBottom: "1px solid rgba(212,175,55,.25)" }}>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>ID</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "التاريخ" : "Date"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "الاسم" : "Name"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "الكمية" : "Qty"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "الهاتف" : "Phone"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "البريد" : "Email"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "الإقامة" : "Residence"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "التسليم" : "Delivery"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "المصدر" : "Source"}</th>
-                  <th style={{ padding: "12px 16px", color: C.gold, fontWeight: 700 }}>{isAr ? "الحالة (تغيير فوري)" : "Status (Live Change)"}</th>
+                  <th style={{ padding: "14px 24px", color: C.gold, fontWeight: 700 }}>{isAr ? "رقم الطلب" : "Order ID"}</th>
+                  <th style={{ padding: "14px 24px", color: C.gold, fontWeight: 700 }}>{isAr ? "اسم العميل" : "Customer Name"}</th>
+                  <th style={{ padding: "14px 24px", color: C.gold, fontWeight: 700 }}>{isAr ? "الحالة" : "Status"}</th>
+                  <th style={{ padding: "14px 24px", color: C.gold, fontWeight: 700, textAlign: "center" }}>{isAr ? "التفاصيل" : "Action"}</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((o, idx) => {
-                  const cleanPhone = (o.Phone || "").replace(/[^0-9]/g, "");
                   const curStatus = o.Status || "Pending";
                   const statusColor = STATUS_COLORS[curStatus] || "#FFB800";
 
                   return (
                     <tr
                       key={o.ID || idx}
-                      style={{ borderBottom: "1px solid rgba(212,175,55,.12)", transition: "background .15s" }}
+                      onClick={() => setSelectedOrder(o)}
+                      style={{
+                        borderBottom: "1px solid rgba(212,175,55,.12)",
+                        transition: "background .15s",
+                        cursor: "pointer",
+                      }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(153,0,0,.15)")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
-                      <td style={{ padding: "12px 16px", fontFamily: "monospace", color: C.amber, fontWeight: "bold" }}>
+                      <td style={{ padding: "14px 24px", fontFamily: "monospace", color: C.amber, fontWeight: "bold", fontSize: 15 }}>
                         {o.ID || `ORD-${idx + 1}`}
                       </td>
-                      <td style={{ padding: "12px 16px", color: "#d8cebe", whiteSpace: "nowrap" }}>
-                        {o.Date} <span style={{ color: "#8d8578", fontSize: 11 }}>{o.Time || ""}</span>
+                      <td style={{ padding: "14px 24px", color: "#fff", fontWeight: 600, fontSize: 15 }}>
+                        {o.Name}
                       </td>
-                      <td style={{ padding: "12px 16px", color: "#fff", fontWeight: 600 }}>{o.Name}</td>
-                      <td style={{ padding: "12px 16px", color: C.amber, fontWeight: "bold", fontFamily: "monospace" }}>
-                        {o.Grams} g
-                      </td>
-                      <td style={{ padding: "12px 16px", whiteSpace: "nowrap", fontFamily: "monospace", color: "#d8cebe" }}>
-                        {o.Phone || "—"}
-                        {cleanPhone && (
-                          <a
-                            href={`https://wa.me/${cleanPhone}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              marginLeft: 6,
-                              color: "#25D366",
-                              textDecoration: "none",
-                              fontSize: 12,
-                              fontWeight: "bold",
-                            }}
-                            title="Open WhatsApp Chat"
-                          >
-                            💬
-                          </a>
-                        )}
-                      </td>
-                      <td style={{ padding: "12px 16px", color: C.body }}>{o.Email || "—"}</td>
-                      <td style={{ padding: "12px 16px", color: "#d8cebe" }}>{o.Country_Residence || "—"}</td>
-                      <td style={{ padding: "12px 16px", color: "#fff", fontWeight: 500 }}>{o.Country_Delivery || "—"}</td>
-                      <td style={{ padding: "12px 16px" }}>
+                      <td style={{ padding: "14px 24px" }}>
                         <span
                           style={{
                             display: "inline-block",
-                            padding: "2px 8px",
-                            borderRadius: 10,
-                            fontSize: 11,
+                            padding: "4px 12px",
+                            borderRadius: 12,
+                            fontSize: 12,
                             fontWeight: "bold",
-                            background: o.Source === "Order Form" ? "#7a0000" : "#2d4428",
-                            color: "#FFE9A8",
-                            border: "1px solid rgba(255,184,0,.3)",
-                          }}
-                        >
-                          {o.Source || "AI Assistant"}
-                        </span>
-                      </td>
-                      <td style={{ padding: "12px 16px" }}>
-                        <select
-                          value={curStatus}
-                          onChange={(e) => handleStatusChange(o.ID, e.target.value)}
-                          style={{
-                            padding: "4px 8px",
-                            background: "#180e0f",
+                            background: "rgba(0,0,0,.4)",
                             color: statusColor,
                             border: `1px solid ${statusColor}`,
-                            borderRadius: 6,
-                            fontWeight: "bold",
-                            fontSize: 12,
-                            cursor: "pointer",
-                            outline: "none",
                           }}
                         >
-                          <option value="Pending" style={{ color: "#FFB800", background: "#2a1c1d" }}>
-                            🟡 {isAr ? "Pending (في الانتظار)" : "Pending"}
-                          </option>
-                          <option value="Paid" style={{ color: "#25D366", background: "#2a1c1d" }}>
-                            🟢 {isAr ? "Paid (تم الدفع)" : "Paid"}
-                          </option>
-                          <option value="Shipped" style={{ color: "#3b82f6", background: "#2a1c1d" }}>
-                            🚚 {isAr ? "Shipped (تم الشحن)" : "Shipped"}
-                          </option>
-                          <option value="Cancelled" style={{ color: "#ef4444", background: "#2a1c1d" }}>
-                            ❌ {isAr ? "Cancelled (ملغى)" : "Cancelled"}
-                          </option>
-                        </select>
+                          {curStatus === "Paid"
+                            ? isAr ? "🟢 تم الدفع" : "🟢 Paid"
+                            : curStatus === "Shipped"
+                            ? isAr ? "🚚 تم الشحن" : "🚚 Shipped"
+                            : curStatus === "Cancelled"
+                            ? isAr ? "❌ ملغى" : "❌ Cancelled"
+                            : isAr ? "🟡 في الانتظار" : "🟡 Pending"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "14px 24px", textAlign: "center" }}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOrder(o);
+                          }}
+                          style={{
+                            padding: "6px 16px",
+                            background: "#3d2224",
+                            color: "#FFE9A8",
+                            border: "1px solid rgba(212,175,55,.4)",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                            fontSize: 13,
+                            fontWeight: 600,
+                          }}
+                        >
+                          👁️ {isAr ? "عرض التفاصيل" : "View Details"}
+                        </button>
                       </td>
                     </tr>
                   );
@@ -378,6 +426,215 @@ export default function AdminOrdersModal({ open, onClose }) {
             </table>
           )}
         </div>
+
+        {/* ORDER DETAILS POPUP MODAL */}
+        {selectedOrder && (
+          <div
+            onClick={() => setSelectedOrder(null)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 50,
+              background: "rgba(10,5,6,.88)",
+              backdropFilter: "blur(6px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "20px",
+              animation: "fadeIn .2s ease",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "min(560px, 94vw)",
+                background: "linear-gradient(160deg,#352727,#221617)",
+                border: "1px solid rgba(212,175,55,.5)",
+                borderRadius: 12,
+                boxShadow: "0 20px 60px rgba(0,0,0,.8)",
+                padding: "26px 28px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              {/* Modal Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(212,175,55,.25)", paddingBottom: 14 }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 19, color: C.amber, fontWeight: "bold" }}>
+                      {selectedOrder.ID}
+                    </span>
+                    {/* Active Status Badge in Header */}
+                    <span
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: 12,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: curModalColor,
+                        border: `1.5px solid ${curModalColor}`,
+                        background: "rgba(0,0,0,.45)",
+                        boxShadow: `0 0 10px ${curModalColor}30`,
+                      }}
+                    >
+                      {curModalStatus === "Paid"
+                        ? isAr ? "🟢 تم الدفع (Paid)" : "🟢 Paid"
+                        : curModalStatus === "Shipped"
+                        ? isAr ? "🚚 تم الشحن (Shipped)" : "🚚 Shipped"
+                        : curModalStatus === "Cancelled"
+                        ? isAr ? "❌ ملغى (Cancelled)" : "❌ Cancelled"
+                        : isAr ? "🟡 قيد الانتظار (Pending)" : "🟡 Pending"}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#8d8578", marginTop: 4 }}>
+                    {selectedOrder.Date} — {selectedOrder.Time}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  style={{ background: "transparent", border: "none", color: C.paper, fontSize: 24, cursor: "pointer" }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Information Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: 14 }}>
+                <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
+                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "👤 اسم العميل" : "👤 Customer Name"}</div>
+                  <div style={{ fontWeight: 700, color: "#fff" }}>{selectedOrder.Name}</div>
+                </div>
+
+                <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
+                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "⚖️ الكمية المطلوبة" : "⚖️ Quantity"}</div>
+                  <div style={{ fontWeight: 700, color: C.amber, fontFamily: "monospace", fontSize: 16 }}>{selectedOrder.Grams} g</div>
+                </div>
+
+                <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
+                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "📞 الهاتف" : "📞 Phone"}</div>
+                  <div style={{ fontWeight: 600, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span>{selectedOrder.Phone || "—"}</span>
+                    {selectedOrder.Phone && (
+                      <a
+                        href={`https://wa.me/${selectedOrder.Phone.replace(/[^0-9]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          background: "#25D366",
+                          color: "#fff",
+                          padding: "2px 8px",
+                          borderRadius: 6,
+                          fontSize: 11,
+                          textDecoration: "none",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        💬 WhatsApp
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
+                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "📧 البريد الإلكتروني" : "📧 Email"}</div>
+                  <div style={{ fontWeight: 600, color: C.body, wordBreak: "break-all" }}>{selectedOrder.Email || "—"}</div>
+                </div>
+
+                <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
+                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "🏠 بلد الإقامة" : "🏠 Residence"}</div>
+                  <div style={{ fontWeight: 600, color: "#fff" }}>{selectedOrder.Country_Residence || "—"}</div>
+                </div>
+
+                <div style={{ background: "#251819", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.2)" }}>
+                  <div style={{ fontSize: 11, color: C.gold, marginBottom: 4 }}>{isAr ? "📍 بلد التوصيل" : "📍 Delivery"}</div>
+                  <div style={{ fontWeight: 600, color: "#fff" }}>{selectedOrder.Country_Delivery || "—"}</div>
+                </div>
+              </div>
+
+              {/* Source Badge */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#1f1415", padding: "8px 14px", borderRadius: 8 }}>
+                <span style={{ fontSize: 12, color: "#8d8578" }}>{isAr ? "مصدر الطلب:" : "Order Source:"}</span>
+                <span
+                  style={{
+                    padding: "3px 10px",
+                    borderRadius: 10,
+                    fontSize: 12,
+                    fontWeight: "bold",
+                    background: selectedOrder.Source === "Order Form" ? "#7a0000" : "#2d4428",
+                    color: "#FFE9A8",
+                  }}
+                >
+                  {selectedOrder.Source || "AI Assistant"}
+                </span>
+              </div>
+
+              {/* Status Selector with Highlighted Active State */}
+              <div style={{ background: "#1c1112", padding: "14px", borderRadius: 8, border: "1px solid rgba(212,175,55,.3)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, color: C.gold, fontWeight: 700 }}>
+                    {isAr ? "🔄 تغيير الحالة:" : "🔄 Change Status:"}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#8d8578" }}>
+                    {isAr ? "الحالة الحالية محددة بعلامة ✓" : "Current status marked with ✓"}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+                  {["Pending", "Paid", "Shipped", "Cancelled"].map((st) => {
+                    const active = curModalStatus === st;
+                    const stColor = STATUS_COLORS[st];
+                    return (
+                      <button
+                        key={st}
+                        onClick={() => handleStatusChange(selectedOrder.ID, st)}
+                        style={{
+                          padding: "10px 4px",
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          background: active ? stColor : "#2a1b1c",
+                          color: active ? (st === "Pending" ? "#000" : "#fff") : "#d8cebe",
+                          border: active ? `2px solid #fff` : `1px solid rgba(212,175,55,.25)`,
+                          boxShadow: active ? `0 0 14px ${stColor}80` : "none",
+                          transform: active ? "scale(1.02)" : "scale(1)",
+                          transition: "all .15s ease",
+                        }}
+                      >
+                        {active && "✓ "}
+                        {st === "Paid"
+                          ? isAr ? "🟢 مدفوع" : "🟢 Paid"
+                          : st === "Shipped"
+                          ? isAr ? "🚚 مشحون" : "🚚 Shipped"
+                          : st === "Cancelled"
+                          ? isAr ? "❌ ملغى" : "❌ Cancel"
+                          : isAr ? "🟡 انتظار" : "🟡 Pending"}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedOrder(null)}
+                style={{
+                  padding: "10px",
+                  background: "transparent",
+                  color: C.gold,
+                  border: "1px solid rgba(212,175,55,.4)",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  fontSize: 13,
+                }}
+              >
+                {isAr ? "إغلاق التفاصيل" : "Close Details"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
