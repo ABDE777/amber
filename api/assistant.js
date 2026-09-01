@@ -11,7 +11,7 @@ import { isPromptAttack } from "../lib/guard.js";
 // Env: GROQ_API_KEY (required), GROQ_ASSISTANT_MODEL (optional, default below).
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "openai/gpt-oss-120b";
+const DEFAULT_MODEL = "groq/compound";
 
 const BLOCKED_REPLY = {
   ar: "عذراً، لا يمكنني معالجة هذا الطلب. يسعدني مساعدتك في أي سؤال عن عنبر الحوت أو في إتمام طلبك.",
