@@ -1,16 +1,34 @@
-import { readOrdersCsvAsync, parseOrdersFromCsv, updateOrderStatus } from "../lib/orders_storage.js";
+import { readOrdersCsvAsync, parseOrdersFromCsv, updateOrderStatus, deleteOrder } from "../lib/orders_storage.js";
+
+function parseBody(req) {
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch {
+      body = {};
+    }
+  }
+  return body || {};
+}
 
 export default async function handler(req, res) {
+  // Handle DELETE to remove an order (id via ?id= or JSON body)
+  if (req.method === "DELETE") {
+    const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+    const body = parseBody(req);
+    const orderId = String(url.searchParams.get("id") || body?.orderId || body?.id || "").trim();
+    if (!orderId) {
+      return res.status(400).json({ ok: false, error: "missing_orderId" });
+    }
+    const result = await deleteOrder(orderId);
+    const code = result.ok ? 200 : result.error === "order_not_found" ? 404 : 400;
+    return res.status(code).json(result);
+  }
+
   // Handle POST/PATCH to update order status
   if (req.method === "POST" || req.method === "PATCH") {
-    let body = req.body;
-    if (typeof body === "string") {
-      try {
-        body = JSON.parse(body);
-      } catch {
-        body = {};
-      }
-    }
+    const body = parseBody(req);
     const orderId = String(body?.orderId || body?.id || "").trim();
     const status = String(body?.status || "").trim();
 
