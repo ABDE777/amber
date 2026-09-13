@@ -311,7 +311,7 @@ function Hero({ onOrder }) {
           }}
         />
         <img
-          src="/assets/21 copy.jpg"
+          src="/IMG/21%20copy.jpg"
           alt="عنبر الحوت — Moroccan World of Amber"
           style={{
             position: "relative",
@@ -439,15 +439,16 @@ function Origin() {
   );
 }
 
-// Real product photos. Videos are placeholders until the real files land in
-// /public/assets — set `src` to a video path (e.g. "/assets/video-1.mp4") and
-// it renders as a real, playable <video>; leave it empty for a poster + "coming
-// soon" placeholder that keeps the layout ready.
-const GALLERY_IMAGES = ["/assets/20 copy.jpg", "/assets/22 copy.jpg", "/assets/gallery-2.jpg", "/assets/19 copy.jpg"];
+// Real product photos (in /public/IMG) and product videos (in /public/VIDEOS).
+// Paths are URL-encoded because the source files contain spaces. To swap media,
+// drop the file in the matching folder and update the path here. A video with a
+// non-empty `src` renders as a real, playable <video>; an empty `src` falls back
+// to a poster + "coming soon" placeholder that keeps the layout ready.
+const GALLERY_IMAGES = ["/IMG/20%20copy.jpg", "/IMG/22%20copy.jpg", "/assets/gallery-2.jpg", "/IMG/19%20copy.jpg"];
 const GALLERY_VIDEOS = [
-  { src: "", poster: "/assets/19 copy.jpg" },
-  { src: "", poster: "/assets/20 copy.jpg" },
-  { src: "", poster: "/assets/22 copy.jpg" },
+  { src: "/VIDEOS/WhatsApp%20Video%202026-09-09%20at%2013.52.32.mp4", poster: "/IMG/19%20copy.jpg" },
+  { src: "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.30.17.mp4", poster: "/IMG/20%20copy.jpg" },
+  { src: "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.32.47.mp4", poster: "/IMG/22%20copy.jpg" },
 ];
 
 function Lightbox({ index, onClose, onPrev, onNext, images, captions, dir }) {
