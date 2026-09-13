@@ -6,7 +6,6 @@ import { LangProvider, useLang } from "./i18n.jsx";
 import OrderModal from "./components/OrderModal.jsx";
 import AmberMotionBackground from "./components/AmberMotionBackground.jsx";
 import AdminOrdersModal from "./components/AdminOrdersModal.jsx";
-import { COUNTRIES, calculatePrice, useLiveRates } from "../lib/countries.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,31 +20,106 @@ const C = {
   brand: "Marcellus, serif",
 };
 
+const LANGS = [
+  { code: "ar", label: "العربية" },
+  { code: "en", label: "English" },
+  { code: "fr", label: "Français" },
+  { code: "zh", label: "中文" },
+];
+
 function LangToggle() {
-  const { setLang, t, lang } = useLang();
+  const { setLang, lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const current = LANGS.find((l) => l.code === lang) || LANGS[0];
+
   return (
-    <button
-      onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-      aria-label="Switch language"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "8px 14px",
-        background: "transparent",
-        border: "1px solid rgba(212,175,55,.4)",
-        color: C.gold,
-        fontSize: 13,
-        fontWeight: 700,
-        letterSpacing: ".08em",
-        cursor: "pointer",
-        borderRadius: 3,
-        fontFamily: C.mono,
-      }}
-    >
-      <span aria-hidden>🌐</span>
-      {t.other}
-    </button>
+    <div style={{ position: "relative", zIndex: 60 }}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Switch language"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "8px 14px",
+          background: open ? "rgba(212,175,55,.12)" : "transparent",
+          border: "1px solid rgba(212,175,55,.4)",
+          color: C.gold,
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: ".04em",
+          cursor: "pointer",
+          borderRadius: 3,
+          fontFamily: C.mono,
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span aria-hidden>🌐</span>
+        {current.label}
+        <span aria-hidden style={{ fontSize: 9, opacity: 0.8, transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }}>▼</span>
+      </button>
+
+      {open && (
+        <>
+          {/* click-away backdrop */}
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: -1 }} />
+          <div
+            role="listbox"
+            style={{
+              position: "absolute",
+              top: "calc(100% + 8px)",
+              insetInlineEnd: 0,
+              minWidth: 150,
+              background: "rgba(30,20,21,.98)",
+              border: "1px solid rgba(212,175,55,.4)",
+              borderRadius: 6,
+              boxShadow: "0 18px 40px rgba(0,0,0,.55)",
+              overflow: "hidden",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            {LANGS.map((l) => {
+              const active = l.code === lang;
+              return (
+                <button
+                  key={l.code}
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => {
+                    setLang(l.code);
+                    setOpen(false);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    width: "100%",
+                    padding: "11px 16px",
+                    background: active ? "rgba(212,175,55,.14)" : "transparent",
+                    border: "none",
+                    borderBottom: "1px solid rgba(212,175,55,.1)",
+                    color: active ? C.gold : "#d8cebe",
+                    fontSize: 14,
+                    fontWeight: active ? 700 : 500,
+                    textAlign: "start",
+                    cursor: "pointer",
+                    fontFamily: "system-ui, sans-serif",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = "rgba(153,0,0,.35)")}
+                  onMouseOut={(e) => (e.currentTarget.style.background = active ? "rgba(212,175,55,.14)" : "transparent")}
+                >
+                  {l.label}
+                  {active && <span aria-hidden style={{ color: C.gold }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -365,65 +439,135 @@ function Origin() {
   );
 }
 
+// Real product photos. Videos are placeholders until the real files land in
+// /public/assets — set `src` to a video path (e.g. "/assets/video-1.mp4") and
+// it renders as a real, playable <video>; leave it empty for a poster + "coming
+// soon" placeholder that keeps the layout ready.
+const GALLERY_IMAGES = ["/assets/20 copy.jpg", "/assets/22 copy.jpg", "/assets/gallery-2.jpg", "/assets/19 copy.jpg"];
+const GALLERY_VIDEOS = [
+  { src: "", poster: "/assets/19 copy.jpg" },
+  { src: "", poster: "/assets/20 copy.jpg" },
+  { src: "", poster: "/assets/22 copy.jpg" },
+];
+
+function Lightbox({ index, onClose, onPrev, onNext, images, captions, dir }) {
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowLeft") (dir === "rtl" ? onNext : onPrev)();
+      else if (e.key === "ArrowRight") (dir === "rtl" ? onPrev : onNext)();
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose, onPrev, onNext, dir]);
+
+  return (
+    <div
+      className="mwoa-lightbox"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 200,
+        background: "rgba(10,6,7,.94)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+    >
+      <button onClick={onClose} aria-label="Close" className="lb-btn" style={{ position: "absolute", top: 18, insetInlineEnd: 18, fontSize: 30 }}>×</button>
+      <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="Previous" className="lb-btn lb-nav" style={{ insetInlineStart: 14 }}>‹</button>
+      <figure onClick={(e) => e.stopPropagation()} style={{ margin: 0, maxWidth: "min(1000px, 92vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+        <img src={images[index]} alt={captions[index]} style={{ maxWidth: "100%", maxHeight: "78vh", objectFit: "contain", borderRadius: 8, border: "1px solid rgba(212,175,55,.3)", boxShadow: "0 30px 80px rgba(0,0,0,.7)" }} />
+        <figcaption style={{ fontFamily: C.mono, fontSize: 13, letterSpacing: ".08em", color: "#d8cebe", textAlign: "center" }}>
+          <span style={{ color: C.gold }}>{index + 1} / {images.length}</span>  ·  {captions[index]}
+        </figcaption>
+      </figure>
+      <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="Next" className="lb-btn lb-nav" style={{ insetInlineEnd: 14 }}>›</button>
+    </div>
+  );
+}
+
 function Gallery() {
-  const { t, fonts } = useLang();
+  const { t, fonts, dir } = useLang();
   const h2 = useH2();
-  const galleryItems = [
-    { src: "/assets/20 copy.jpg", span: { gridRow: "span 2" } },
-    { src: "/assets/22 copy.jpg", span: {} },
-    { src: "/assets/gallery-2.jpg", span: {} },
-    { src: "/assets/19 copy.jpg", span: { gridColumn: "span 2" } },
-  ];
+  const [lightbox, setLightbox] = useState(null);
+  const images = GALLERY_IMAGES;
+  const captions = t.gallery.slots;
+
   return (
     <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#2f2323" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 40, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 36, flexWrap: "wrap" }}>
           <div>
             <SectionLabel>{t.gallery.label}</SectionLabel>
             <h2 style={h2}>{t.gallery.h2}</h2>
           </div>
+          <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#9a8f7f" }}>{t.gallery.zoomHint}</span>
         </div>
-        <div className="mwoa-gallery" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gridTemplateRows: "240px 240px", gap: 8, background: "transparent" }}>
-          {t.gallery.slots.map((label, i) => (
-            <div
-              key={label}
-              className="gallery-card"
-              style={{
-                ...galleryItems[i].span,
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: 6,
-                border: "1px solid rgba(212,175,55,.3)",
-                boxShadow: "0 10px 30px rgba(0,0,0,.4)",
-              }}
+
+        {/* Professional image gallery */}
+        <div className="mwoa-pro-gallery">
+          {images.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              className="pro-card"
+              onClick={() => setLightbox(i)}
+              aria-label={captions[i]}
             >
-              <img
-                src={galleryItems[i].src}
-                alt={label}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                  transition: "transform .6s cubic-bezier(.2,1,.3,1)",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "linear-gradient(180deg,transparent 40%,rgba(0,0,0,.85) 100%)",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  padding: "16px 20px",
-                }}
-              >
-                <span style={{ fontFamily: fonts.ui, fontSize: 14, fontWeight: 600, color: C.paper, letterSpacing: ".04em" }}>{label}</span>
-              </div>
-            </div>
+              <img src={src} alt={captions[i]} loading="lazy" />
+              <span className="pro-num" style={{ fontFamily: C.mono }}>{String(i + 1).padStart(2, "0")}</span>
+              <span className="pro-zoom" aria-hidden>⤢</span>
+              <span className="pro-caption" style={{ fontFamily: fonts.ui }}>{captions[i]}</span>
+            </button>
           ))}
         </div>
+
+        {/* Product videos */}
+        <div style={{ marginTop: 64 }}>
+          <div style={{ marginBottom: 26 }}>
+            <div style={{ fontFamily: fonts.display, fontSize: "clamp(1.5rem, 4vw, 2rem)", color: C.paper, fontWeight: 700 }}>{t.gallery.videosTitle}</div>
+            <div style={{ fontFamily: fonts.ui, fontSize: 15, color: "#a79f8f", marginTop: 8 }}>{t.gallery.videosSub}</div>
+          </div>
+          <div className="mwoa-video-grid">
+            {GALLERY_VIDEOS.map((v, i) => (
+              <figure key={i} className="video-card" style={{ margin: 0 }}>
+                {v.src ? (
+                  <video src={v.src} poster={v.poster} controls playsInline preload="metadata" className="video-el" />
+                ) : (
+                  <div className="video-ph" style={{ backgroundImage: `url("${v.poster}")` }}>
+                    <span className="video-play" aria-hidden>▶</span>
+                    <span className="video-badge" style={{ fontFamily: C.mono }}>{t.gallery.comingSoon}</span>
+                  </div>
+                )}
+                <figcaption className="video-cap" style={{ fontFamily: fonts.ui }}>{t.gallery.videoSlots[i]}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {lightbox !== null && (
+        <Lightbox
+          index={lightbox}
+          images={images}
+          captions={captions}
+          dir={dir}
+          onClose={() => setLightbox(null)}
+          onPrev={() => setLightbox((n) => (n - 1 + images.length) % images.length)}
+          onNext={() => setLightbox((n) => (n + 1) % images.length)}
+        />
+      )}
     </section>
   );
 }
@@ -459,137 +603,6 @@ function Authenticity() {
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function Order({ onOrder }) {
-  const { t, fonts, dir } = useLang();
-  const isAr = dir === "rtl";
-  const h2 = useH2();
-  const liveRates = useLiveRates();
-  const [selectedCountry, setSelectedCountry] = useState(isAr ? "المغرب" : "Morocco");
-  const [grams, setGrams] = useState(10);
-
-  const priceEst = calculatePrice(grams, selectedCountry, isAr, liveRates);
-
-  return (
-    <section id="buy" className="mwoa-section" style={{ padding: "120px 60px", background: "radial-gradient(1000px 620px at 50% 0%, #a62b2b 0%, #642a2b 34%, #342726 72%)" }}>
-      <div className="reveal" style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
-        <SectionLabel>{t.order.label}</SectionLabel>
-        <h2 style={{ ...h2, fontSize: "clamp(2.1rem, 6vw, 3.4rem)" }}>{t.order.h2}</h2>
-        <p style={{ fontSize: 18, lineHeight: 2, color: C.body, maxWidth: 640, margin: "28px auto 0", fontFamily: fonts.ui }}>{t.order.body}</p>
-
-        {/* Live Country Currency & Price Estimator */}
-        <div
-          style={{
-            maxWidth: 580,
-            margin: "36px auto 0",
-            background: "rgba(42,30,31,.88)",
-            border: "1px solid rgba(212,175,55,.45)",
-            borderRadius: 8,
-            padding: "24px 28px",
-            boxShadow: "0 18px 40px rgba(0,0,0,.45)",
-          }}
-        >
-          <div style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".15em", color: C.gold, marginBottom: 16 }}>
-            {isAr ? "📊 حاسبة السعر المباشرة حسب عملة بلد التوصيل" : "📊 LIVE PRICE ESTIMATOR BY DELIVERY COUNTRY"}
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
-            <div style={{ textAlign: isAr ? "right" : "left" }}>
-              <label style={{ fontSize: 11.5, color: "#a79f8f", display: "block", marginBottom: 6, fontFamily: fonts.ui }}>
-                {isAr ? "بلد التوصيل والعملة:" : "Delivery Country & Currency:"}
-              </label>
-              <select
-                value={selectedCountry}
-                onChange={(e) => setSelectedCountry(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  background: "#1e1314",
-                  border: "1px solid rgba(212,175,55,.35)",
-                  color: "#FFE9A8",
-                  borderRadius: 4,
-                  fontSize: 14,
-                  fontFamily: fonts.ui,
-                  cursor: "pointer",
-                  outline: "none",
-                }}
-              >
-                {COUNTRIES.map((c) => {
-                  const name = isAr ? c.nameAr : c.nameEn;
-                  const curr = isAr ? c.currencyAr : c.currencyEn;
-                  return (
-                    <option key={c.code + c.nameEn} value={name}>
-                      {name} ({curr})
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div style={{ textAlign: isAr ? "right" : "left" }}>
-              <label style={{ fontSize: 11.5, color: "#a79f8f", display: "block", marginBottom: 6, fontFamily: fonts.ui }}>
-                {isAr ? "الكمية المطلوبة (غرام):" : "Desired Weight (grams):"}
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={grams}
-                onChange={(e) => setGrams(Math.max(1, Number(e.target.value) || 1))}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  background: "#1e1314",
-                  border: "1px solid rgba(212,175,55,.35)",
-                  color: "#FFE9A8",
-                  borderRadius: 4,
-                  fontSize: 14,
-                  fontFamily: fonts.ui,
-                  outline: "none",
-                }}
-              />
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: "14px 18px",
-              background: "linear-gradient(135deg, rgba(212,175,55,.15) 0%, rgba(153,0,0,.25) 100%)",
-              border: "1px solid rgba(212,175,55,.5)",
-              borderRadius: 6,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 10,
-            }}
-          >
-            <div style={{ textAlign: isAr ? "right" : "left" }}>
-              <div style={{ fontSize: 12, color: "#d8cebe", fontFamily: fonts.ui }}>
-                {isAr ? "سعر الغرام:" : "Price per gram:"} <span style={{ color: C.gold, fontWeight: 700 }}>{priceEst.formattedUnit}</span>
-              </div>
-            </div>
-            <div style={{ textAlign: isAr ? "left" : "right" }}>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#FFB800", fontFamily: C.mono }}>
-                {priceEst.formattedTotal}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 36, flexWrap: "wrap" }}>
-          <button
-            onClick={onOrder}
-            className="btn-ruby"
-            style={{ padding: "18px 48px", background: C.ruby, color: "#FFE9A8", fontSize: 16, fontWeight: 700, border: "1px solid rgba(255,184,0,.4)", cursor: "pointer", fontFamily: fonts.ui }}
-          >
-            {t.order.cta}
-          </button>
-        </div>
-        <div style={{ fontFamily: fonts.ui, fontSize: 13, letterSpacing: ".04em", color: "#988e80", marginTop: 22 }}>{t.order.note}</div>
       </div>
     </section>
   );
@@ -668,7 +681,6 @@ function AppInner() {
       <Origin />
       <Gallery />
       <Authenticity />
-      <Order onOrder={openModal} />
       <Footer />
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
       <AdminOrdersModal open={adminOpen} onClose={() => setAdminOpen(false)} />
