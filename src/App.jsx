@@ -21,31 +21,106 @@ const C = {
   brand: "Marcellus, serif",
 };
 
+const LANGS = [
+  { code: "ar", label: "العربية" },
+  { code: "en", label: "English" },
+  { code: "fr", label: "Français" },
+  { code: "zh", label: "中文" },
+];
+
 function LangToggle() {
-  const { setLang, t, lang } = useLang();
+  const { setLang, lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const current = LANGS.find((l) => l.code === lang) || LANGS[0];
+
   return (
-    <button
-      onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-      aria-label="Switch language"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "8px 14px",
-        background: "transparent",
-        border: "1px solid rgba(212,175,55,.4)",
-        color: C.gold,
-        fontSize: 13,
-        fontWeight: 700,
-        letterSpacing: ".08em",
-        cursor: "pointer",
-        borderRadius: 3,
-        fontFamily: C.mono,
-      }}
-    >
-      <span aria-hidden>🌐</span>
-      {t.other}
-    </button>
+    <div style={{ position: "relative", zIndex: 60 }}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Switch language"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "8px 14px",
+          background: open ? "rgba(212,175,55,.12)" : "transparent",
+          border: "1px solid rgba(212,175,55,.4)",
+          color: C.gold,
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: ".04em",
+          cursor: "pointer",
+          borderRadius: 3,
+          fontFamily: C.mono,
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span aria-hidden>🌐</span>
+        {current.label}
+        <span aria-hidden style={{ fontSize: 9, opacity: 0.8, transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }}>▼</span>
+      </button>
+
+      {open && (
+        <>
+          {/* click-away backdrop */}
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: -1 }} />
+          <div
+            role="listbox"
+            style={{
+              position: "absolute",
+              top: "calc(100% + 8px)",
+              insetInlineEnd: 0,
+              minWidth: 150,
+              background: "rgba(30,20,21,.98)",
+              border: "1px solid rgba(212,175,55,.4)",
+              borderRadius: 6,
+              boxShadow: "0 18px 40px rgba(0,0,0,.55)",
+              overflow: "hidden",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            {LANGS.map((l) => {
+              const active = l.code === lang;
+              return (
+                <button
+                  key={l.code}
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => {
+                    setLang(l.code);
+                    setOpen(false);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    width: "100%",
+                    padding: "11px 16px",
+                    background: active ? "rgba(212,175,55,.14)" : "transparent",
+                    border: "none",
+                    borderBottom: "1px solid rgba(212,175,55,.1)",
+                    color: active ? C.gold : "#d8cebe",
+                    fontSize: 14,
+                    fontWeight: active ? 700 : 500,
+                    textAlign: "start",
+                    cursor: "pointer",
+                    fontFamily: "system-ui, sans-serif",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = "rgba(153,0,0,.35)")}
+                  onMouseOut={(e) => (e.currentTarget.style.background = active ? "rgba(212,175,55,.14)" : "transparent")}
+                >
+                  {l.label}
+                  {active && <span aria-hidden style={{ color: C.gold }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -365,65 +440,135 @@ function Origin() {
   );
 }
 
+// Real product photos. Videos are placeholders until the real files land in
+// /public/assets — set `src` to a video path (e.g. "/assets/video-1.mp4") and
+// it renders as a real, playable <video>; leave it empty for a poster + "coming
+// soon" placeholder that keeps the layout ready.
+const GALLERY_IMAGES = ["/assets/20 copy.jpg", "/assets/22 copy.jpg", "/assets/gallery-2.jpg", "/assets/19 copy.jpg"];
+const GALLERY_VIDEOS = [
+  { src: "", poster: "/assets/19 copy.jpg" },
+  { src: "", poster: "/assets/20 copy.jpg" },
+  { src: "", poster: "/assets/22 copy.jpg" },
+];
+
+function Lightbox({ index, onClose, onPrev, onNext, images, captions, dir }) {
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowLeft") (dir === "rtl" ? onNext : onPrev)();
+      else if (e.key === "ArrowRight") (dir === "rtl" ? onPrev : onNext)();
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose, onPrev, onNext, dir]);
+
+  return (
+    <div
+      className="mwoa-lightbox"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 200,
+        background: "rgba(10,6,7,.94)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+    >
+      <button onClick={onClose} aria-label="Close" className="lb-btn" style={{ position: "absolute", top: 18, insetInlineEnd: 18, fontSize: 30 }}>×</button>
+      <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="Previous" className="lb-btn lb-nav" style={{ insetInlineStart: 14 }}>‹</button>
+      <figure onClick={(e) => e.stopPropagation()} style={{ margin: 0, maxWidth: "min(1000px, 92vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+        <img src={images[index]} alt={captions[index]} style={{ maxWidth: "100%", maxHeight: "78vh", objectFit: "contain", borderRadius: 8, border: "1px solid rgba(212,175,55,.3)", boxShadow: "0 30px 80px rgba(0,0,0,.7)" }} />
+        <figcaption style={{ fontFamily: C.mono, fontSize: 13, letterSpacing: ".08em", color: "#d8cebe", textAlign: "center" }}>
+          <span style={{ color: C.gold }}>{index + 1} / {images.length}</span>  ·  {captions[index]}
+        </figcaption>
+      </figure>
+      <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="Next" className="lb-btn lb-nav" style={{ insetInlineEnd: 14 }}>›</button>
+    </div>
+  );
+}
+
 function Gallery() {
-  const { t, fonts } = useLang();
+  const { t, fonts, dir } = useLang();
   const h2 = useH2();
-  const galleryItems = [
-    { src: "/assets/20 copy.jpg", span: { gridRow: "span 2" } },
-    { src: "/assets/22 copy.jpg", span: {} },
-    { src: "/assets/gallery-2.jpg", span: {} },
-    { src: "/assets/19 copy.jpg", span: { gridColumn: "span 2" } },
-  ];
+  const [lightbox, setLightbox] = useState(null);
+  const images = GALLERY_IMAGES;
+  const captions = t.gallery.slots;
+
   return (
     <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#2f2323" }}>
       <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 40, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 36, flexWrap: "wrap" }}>
           <div>
             <SectionLabel>{t.gallery.label}</SectionLabel>
             <h2 style={h2}>{t.gallery.h2}</h2>
           </div>
+          <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#9a8f7f" }}>{t.gallery.zoomHint}</span>
         </div>
-        <div className="mwoa-gallery" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gridTemplateRows: "240px 240px", gap: 8, background: "transparent" }}>
-          {t.gallery.slots.map((label, i) => (
-            <div
-              key={label}
-              className="gallery-card"
-              style={{
-                ...galleryItems[i].span,
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: 6,
-                border: "1px solid rgba(212,175,55,.3)",
-                boxShadow: "0 10px 30px rgba(0,0,0,.4)",
-              }}
+
+        {/* Professional image gallery */}
+        <div className="mwoa-pro-gallery">
+          {images.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              className="pro-card"
+              onClick={() => setLightbox(i)}
+              aria-label={captions[i]}
             >
-              <img
-                src={galleryItems[i].src}
-                alt={label}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                  transition: "transform .6s cubic-bezier(.2,1,.3,1)",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "linear-gradient(180deg,transparent 40%,rgba(0,0,0,.85) 100%)",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  padding: "16px 20px",
-                }}
-              >
-                <span style={{ fontFamily: fonts.ui, fontSize: 14, fontWeight: 600, color: C.paper, letterSpacing: ".04em" }}>{label}</span>
-              </div>
-            </div>
+              <img src={src} alt={captions[i]} loading="lazy" />
+              <span className="pro-num" style={{ fontFamily: C.mono }}>{String(i + 1).padStart(2, "0")}</span>
+              <span className="pro-zoom" aria-hidden>⤢</span>
+              <span className="pro-caption" style={{ fontFamily: fonts.ui }}>{captions[i]}</span>
+            </button>
           ))}
         </div>
+
+        {/* Product videos */}
+        <div style={{ marginTop: 64 }}>
+          <div style={{ marginBottom: 26 }}>
+            <div style={{ fontFamily: fonts.display, fontSize: "clamp(1.5rem, 4vw, 2rem)", color: C.paper, fontWeight: 700 }}>{t.gallery.videosTitle}</div>
+            <div style={{ fontFamily: fonts.ui, fontSize: 15, color: "#a79f8f", marginTop: 8 }}>{t.gallery.videosSub}</div>
+          </div>
+          <div className="mwoa-video-grid">
+            {GALLERY_VIDEOS.map((v, i) => (
+              <figure key={i} className="video-card" style={{ margin: 0 }}>
+                {v.src ? (
+                  <video src={v.src} poster={v.poster} controls playsInline preload="metadata" className="video-el" />
+                ) : (
+                  <div className="video-ph" style={{ backgroundImage: `url("${v.poster}")` }}>
+                    <span className="video-play" aria-hidden>▶</span>
+                    <span className="video-badge" style={{ fontFamily: C.mono }}>{t.gallery.comingSoon}</span>
+                  </div>
+                )}
+                <figcaption className="video-cap" style={{ fontFamily: fonts.ui }}>{t.gallery.videoSlots[i]}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {lightbox !== null && (
+        <Lightbox
+          index={lightbox}
+          images={images}
+          captions={captions}
+          dir={dir}
+          onClose={() => setLightbox(null)}
+          onPrev={() => setLightbox((n) => (n - 1 + images.length) % images.length)}
+          onNext={() => setLightbox((n) => (n + 1) % images.length)}
+        />
+      )}
     </section>
   );
 }
