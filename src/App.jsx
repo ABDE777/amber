@@ -288,45 +288,8 @@ function Hero({ onOrder }) {
         </div>
       </div>
 
-      {/* Right: real product photo */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            width: "85%",
-            aspectRatio: "1",
-            borderRadius: "50%",
-            background: "radial-gradient(circle,rgba(190,0,0,.55),rgba(255,180,30,.18) 45%,transparent 70%)",
-            animation: "mwoaGlow 6s ease-in-out infinite",
-            pointerEvents: "none",
-            mixBlendMode: "normal",
-          }}
-        />
-        <img
-          src="/IMG/21%20copy.jpg"
-          alt="عنبر الحوت — Moroccan World of Amber"
-          style={{
-            position: "relative",
-            width: "100%",
-            maxWidth: 860,
-            height: "auto",
-            display: "block",
-            objectFit: "cover",
-            borderRadius: 16,
-            animation: "mwoaFloat 8s ease-in-out infinite",
-            boxShadow: "0 30px 80px rgba(0,0,0,.6), 0 0 40px rgba(212,175,55,.15)",
-            border: "1px solid rgba(212,175,55,.3)",
-          }}
-        />
-      </div>
+      {/* Right: product media gallery (e-commerce product-detail style) */}
+      <ProductGallery />
     </section>
   );
 }
@@ -439,16 +402,26 @@ function Origin() {
   );
 }
 
-// Real product photos (in /public/IMG) and product videos (in /public/VIDEOS).
-// Paths are URL-encoded because the source files contain spaces. To swap media,
-// drop the file in the matching folder and update the path here. A video with a
-// non-empty `src` renders as a real, playable <video>; an empty `src` falls back
-// to a poster + "coming soon" placeholder that keeps the layout ready.
-const GALLERY_IMAGES = ["/IMG/20%20copy.jpg", "/IMG/22%20copy.jpg", "/assets/gallery-2.jpg", "/IMG/19%20copy.jpg"];
-const GALLERY_VIDEOS = [
-  { src: "/VIDEOS/WhatsApp%20Video%202026-09-09%20at%2013.52.32.mp4", poster: "/IMG/19%20copy.jpg" },
-  { src: "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.30.17.mp4", poster: "/IMG/20%20copy.jpg" },
-  { src: "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.32.47.mp4", poster: "/IMG/22%20copy.jpg" },
+// Product media. Photos come only from /public/IMG; videos from /public/VIDEOS.
+// Paths are URL-encoded because the source filenames contain spaces. To add or
+// swap media, drop the file in the matching folder and edit the lists below.
+const PRODUCT_IMAGES = [
+  "/IMG/21%20copy.jpg",
+  "/IMG/20%20copy.jpg",
+  "/IMG/22%20copy.jpg",
+  "/IMG/19%20copy.jpg",
+  "/IMG/23%20copy.jpeg",
+];
+const PRODUCT_VIDEOS = [
+  "/VIDEOS/WhatsApp%20Video%202026-09-09%20at%2013.52.32.mp4",
+  "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.30.17.mp4",
+  "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.32.47.mp4",
+];
+// One combined list for the product gallery: images first, then videos. Each
+// video borrows a product photo as its thumbnail/poster.
+const PRODUCT_MEDIA = [
+  ...PRODUCT_IMAGES.map((src) => ({ type: "image", src })),
+  ...PRODUCT_VIDEOS.map((src, i) => ({ type: "video", src, poster: PRODUCT_IMAGES[i % PRODUCT_IMAGES.length] })),
 ];
 
 function Lightbox({ index, onClose, onPrev, onNext, images, captions, dir }) {
@@ -498,78 +471,59 @@ function Lightbox({ index, onClose, onPrev, onNext, images, captions, dir }) {
   );
 }
 
-function Gallery() {
-  const { t, fonts, dir } = useLang();
-  const h2 = useH2();
+// E-commerce product-detail gallery: a large main stage (image or video shown
+// uncropped) plus a thumbnail rail to switch media. Images open a zoom lightbox.
+function ProductGallery() {
+  const { t, dir } = useLang();
+  const [active, setActive] = useState(0);
   const [lightbox, setLightbox] = useState(null);
-  const images = GALLERY_IMAGES;
-  const captions = t.gallery.slots;
+  const media = PRODUCT_MEDIA;
+  const current = media[active];
+  const captions = PRODUCT_IMAGES.map((_, i) => `${t.hero.title} — ${i + 1}`);
 
   return (
-    <section className="mwoa-section" style={{ padding: "100px 60px 120px", background: "#2f2323" }}>
-      <div className="reveal" style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginBottom: 36, flexWrap: "wrap" }}>
-          <div>
-            <SectionLabel>{t.gallery.label}</SectionLabel>
-            <h2 style={h2}>{t.gallery.h2}</h2>
-          </div>
-          <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#9a8f7f" }}>{t.gallery.zoomHint}</span>
-        </div>
+    <div className="hero-media" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 600, margin: "0 auto" }}>
+      <div className="pg-stage">
+        {current.type === "video" ? (
+          <video key={current.src} src={current.src} poster={current.poster} controls playsInline preload="metadata" className="pg-media" />
+        ) : (
+          <button type="button" className="pg-imgbtn" onClick={() => setLightbox(PRODUCT_IMAGES.indexOf(current.src))} aria-label={t.gallery.zoomHint} title={t.gallery.zoomHint}>
+            <img src={current.src} alt={`${t.hero.title} — ${active + 1}`} className="pg-media" />
+            <span className="pg-zoom" aria-hidden>⤢</span>
+          </button>
+        )}
+        <span className="pg-counter" style={{ fontFamily: C.mono }}>{active + 1} / {media.length}</span>
+      </div>
 
-        {/* Professional image gallery */}
-        <div className="mwoa-pro-gallery">
-          {images.map((src, i) => (
-            <button
-              key={src}
-              type="button"
-              className="pro-card"
-              onClick={() => setLightbox(i)}
-              aria-label={captions[i]}
-            >
-              <img src={src} alt={captions[i]} loading="lazy" />
-              <span className="pro-num" style={{ fontFamily: C.mono }}>{String(i + 1).padStart(2, "0")}</span>
-              <span className="pro-zoom" aria-hidden>⤢</span>
-              <span className="pro-caption" style={{ fontFamily: fonts.ui }}>{captions[i]}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Product videos */}
-        <div style={{ marginTop: 64 }}>
-          <div style={{ marginBottom: 26 }}>
-            <div style={{ fontFamily: fonts.display, fontSize: "clamp(1.5rem, 4vw, 2rem)", color: C.paper, fontWeight: 700 }}>{t.gallery.videosTitle}</div>
-            <div style={{ fontFamily: fonts.ui, fontSize: 15, color: "#a79f8f", marginTop: 8 }}>{t.gallery.videosSub}</div>
-          </div>
-          <div className="mwoa-video-grid">
-            {GALLERY_VIDEOS.map((v, i) => (
-              <figure key={i} className="video-card" style={{ margin: 0 }}>
-                {v.src ? (
-                  <video src={v.src} poster={v.poster} controls playsInline preload="metadata" className="video-el" />
-                ) : (
-                  <div className="video-ph" style={{ backgroundImage: `url("${v.poster}")` }}>
-                    <span className="video-play" aria-hidden>▶</span>
-                    <span className="video-badge" style={{ fontFamily: C.mono }}>{t.gallery.comingSoon}</span>
-                  </div>
-                )}
-                <figcaption className="video-cap" style={{ fontFamily: fonts.ui }}>{t.gallery.videoSlots[i]}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
+      <div className="pg-thumbs" role="tablist" aria-label={t.gallery.h2}>
+        {media.map((m, i) => (
+          <button
+            key={i}
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            className={"pg-thumb" + (i === active ? " is-active" : "")}
+            onClick={() => setActive(i)}
+            aria-label={`${m.type === "video" ? "▶ " : ""}${t.hero.title} ${i + 1}`}
+          >
+            <img src={m.poster || m.src} alt="" loading="lazy" />
+            {m.type === "video" && <span className="pg-thumb-play" aria-hidden>▶</span>}
+          </button>
+        ))}
       </div>
 
       {lightbox !== null && (
         <Lightbox
           index={lightbox}
-          images={images}
+          images={PRODUCT_IMAGES}
           captions={captions}
           dir={dir}
           onClose={() => setLightbox(null)}
-          onPrev={() => setLightbox((n) => (n - 1 + images.length) % images.length)}
-          onNext={() => setLightbox((n) => (n + 1) % images.length)}
+          onPrev={() => setLightbox((n) => (n - 1 + PRODUCT_IMAGES.length) % PRODUCT_IMAGES.length)}
+          onNext={() => setLightbox((n) => (n + 1) % PRODUCT_IMAGES.length)}
         />
       )}
-    </section>
+    </div>
   );
 }
 
@@ -680,7 +634,6 @@ function AppInner() {
       <Marquee />
       <WhatIs />
       <Origin />
-      <Gallery />
       <Authenticity />
       <Footer />
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
