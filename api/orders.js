@@ -410,9 +410,29 @@ export default async function handler(req, res) {
     document.getElementById('inputPrice').value = pricePerGram;
     document.getElementById('selectCurr').value = currency;
 
+    // Sync from server on load (server value is source of truth for storefront)
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const serverPrice = Number(data?.settings?.base_price_mad);
+        if (serverPrice > 0) {
+          pricePerGram = serverPrice;
+          document.getElementById('inputPrice').value = serverPrice;
+          localStorage.setItem('mwoa_price_per_gram', String(serverPrice));
+          recalculateStats();
+        }
+      })
+      .catch(() => {});
+
     function onPriceChange(val) {
       pricePerGram = Math.max(0, Number(val) || 0);
       localStorage.setItem('mwoa_price_per_gram', String(pricePerGram));
+      // Persist to server so the storefront always sees the latest price
+      fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'base_price_mad', value: pricePerGram })
+      }).catch(() => {});
       recalculateStats();
     }
 

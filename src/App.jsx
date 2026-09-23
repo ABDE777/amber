@@ -602,6 +602,15 @@ function AppInner() {
   const [adminOpen, setAdminOpen] = useState(false);
   const openModal = () => setModalOpen(true);
 
+  // Automatically open modal if customer returns with ?payment=success or ?payment=error
+  useEffect(() => {
+    try {
+      if (window.location.search.includes("payment=")) {
+        setModalOpen(true);
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const els = gsap.utils.toArray(".reveal");

@@ -22,7 +22,7 @@ function apiDevServer() {
 
         const pathname = req.url.split("?")[0].replace(/\/$/, "");
         const name = pathname.slice("/api/".length);
-        if (!/^[a-zA-Z0-9_-]+$/.test(name)) return next();
+        if (!/^[a-zA-Z0-9_/-]+$/.test(name)) return next();
 
         let handler;
         try {
