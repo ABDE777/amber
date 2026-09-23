@@ -38,7 +38,7 @@ const systemPrompt = (lang) => {
   const langLine = lang === "en" ? "Reply in English only." : "أجب باللغة العربية فقط، بأسلوب مهذب ومختصر.";
   return `You are the ordering assistant for Moroccan World of Amber (MWOA). ${langLine}
 
-Product: natural raw ambergris (عنبر), sold by the gram. Do NOT state prices.
+Product: natural raw ambergris (العنبر), sold by the gram. Do NOT state prices.
 
 You MUST collect ALL 6 of these fields before calling submit_order:
   [1] Full Name (الاسم الكامل)

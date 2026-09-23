@@ -20,7 +20,7 @@ export const STR = {
       eyebrow: "منتج واحد · مادة واحدة",
       title: "العنبر",
       accent: "",
-      desc: "مادة نادرة تتكوّن طبيعياً — تُستعمل في صناعة العطور الفاخرة لرائحتها المميّزة وقدرتها على إطالة ثبات العطر.",
+      desc: "جوهرة المحيط النادرة وأثمن أسرار العطور الفاخرة — أصالة طبيعية خالصة، فريدة في كل قطعة.",
       cta: "اطلب الآن",
       drag: "↺ اسحب للتدوير",
     },
@@ -28,7 +28,7 @@ export const STR = {
     what: {
       label: "٠١ — ما هو",
       h2: "ما هو العنبر حقًّا",
-      body: "العنبر مادة نادرة تتكوّن طبيعياً. وهي مادة عطرية ثمينة تُستعمل أساساً في صناعة العطور الفاخرة لرائحتها المميّزة وقدرتها على إطالة ثبات العطر. كل قطعة فريدة في لونها وملمسها وشكلها ورائحتها.",
+      body: "العنبر مادة طبيعية نادرة واستثنائية تتكوّن عبر سنوات طويلة في أعماق المحيط قبل أن تلامس الشواطئ المغربية. يُعد من أثمن وأندر المكونات في صناعة العطور الفاخرة لرائحته المميزة وعمقه الفريد وقدرته الفائقة على تثبيت العطر لفترات طويلة. كل قطعة أصلية نقدّمها فريدة تماماً في لونها وملمسها وشكلها ونفحاتها العطرية، وتُوزن يدوياً بكل دقة وأمانة.",
       cards: [
         ["طبيعي", "يتكوّن في البحر، لا يُصنّع. لا يُضاف إليه شيء."],
         ["للعطور", "مثبّت عطري: يُبقي الرائحة على البشرة مدة أطول بكثير."],
@@ -169,8 +169,8 @@ export const STR = {
     hero: {
       eyebrow: "ONE PRODUCT · ONE MATERIAL",
       title: "Ambergris",
-      accent: "العنبر",
-      desc: "A rare, naturally occurring substance traditionally associated with the sperm whale — used in fine perfumery for its distinctive scent and its ability to make a fragrance last.",
+      accent: "",
+      desc: "The rare jewel of the ocean and the legendary secret of fine perfumery — pure, unadulterated natural luxury.",
       cta: "Order now",
       drag: "↺ Drag to rotate",
     },
@@ -178,7 +178,7 @@ export const STR = {
     what: {
       label: "01 — WHAT IT IS",
       h2: "What ambergris actually is",
-      body: "Ambergris is a rare, naturally occurring substance traditionally associated with the sperm whale. It is a valuable aromatic material used primarily in fine perfumery for its distinctive scent and its ability to help fragrances last longer. Each piece is naturally unique in colour, texture, shape and aroma.",
+      body: "Ambergris is an extraordinary natural substance that drifts across ocean currents for years before reaching Moroccan shores. Renowned as one of the rarest, most prized aromatic treasures in haute perfumery, it is celebrated for its distinctive warm depth and unmatched fixative power that preserves and elevates fine fragrances. Each authentic raw piece is entirely unique in colour, texture, shape, and aroma, and is weighed strictly by hand.",
       cards: [
         ["Natural", "Formed at sea, not manufactured. Nothing is added."],
         ["Perfumery", "A fixative: it holds a fragrance on the skin far longer."],
@@ -319,8 +319,8 @@ export const STR = {
     hero: {
       eyebrow: "UN PRODUIT · UNE MATIÈRE",
       title: "Ambre gris",
-      accent: "العنبر",
-      desc: "Une substance rare, d'origine naturelle, traditionnellement associée au cachalot — utilisée en haute parfumerie pour son parfum unique et sa capacité à faire durer une fragrance.",
+      accent: "",
+      desc: "Le joyau rare de l'océan et le secret légendaire de la haute parfumerie — un luxe naturel d'une pureté absolue.",
       cta: "Commander",
       drag: "↺ Faites pivoter",
     },
@@ -328,7 +328,7 @@ export const STR = {
     what: {
       label: "01 — CE QUE C'EST",
       h2: "Ce qu'est réellement l'ambre gris",
-      body: "L'ambre gris est une substance rare, d'origine naturelle, traditionnellement associée au cachalot. C'est une précieuse matière aromatique utilisée avant tout en haute parfumerie pour son parfum distinctif et sa capacité à prolonger la tenue des fragrances. Chaque pièce est unique par sa couleur, sa texture, sa forme et son arôme.",
+      body: "L'ambre gris est une matière naturelle d'une rareté absolue, façonnée par les éléments marins au fil de longues années avant d'échouer sur les côtes marocaines. Célèbre trésor de la haute parfumerie, il est recherché pour ses effluves uniques et son pouvoir fixateur incomparable qui prolonge le sillage des parfums les plus raffinés. Chaque pièce brute est rigoureusement authentique et unique par sa teinte, sa texture et son empreinte olfactive.",
       cards: [
         ["Naturel", "Formé en mer, non fabriqué. Rien n'y est ajouté."],
         ["Parfumerie", "Un fixateur : il retient la fragrance sur la peau bien plus longtemps."],
@@ -472,8 +472,8 @@ export const STR = {
     hero: {
       eyebrow: "一种产品 · 一种原料",
       title: "龙涎香",
-      accent: "العنبر",
-      desc: "一种稀有的天然物质，传统上与抹香鲸相关联——因其独特的香气和延长香味留存的能力，被广泛用于高级香水制作。",
+      accent: "",
+      desc: "海洋的珍罕瑰宝，高级香水殿堂的传奇之源——纯粹天然，独一无二。",
       cta: "立即下单",
       drag: "↺ 拖动旋转",
     },
@@ -481,7 +481,7 @@ export const STR = {
     what: {
       label: "01 — 什么是龙涎香",
       h2: "龙涎香究竟是什么",
-      body: "龙涎香是一种稀有的天然物质，传统上与抹香鲸相关联。它是一种珍贵的芳香原料，主要用于高级香水制作，因其独特的香气以及帮助香味更持久的能力而备受推崇。每一块在颜色、质地、形状和香气上都独一无二。",
+      body: "龙涎香是一种历经漫长岁月在大海漂泊沉淀的珍稀天然产物。作为高级香水界中最负盛名的古老原料之一，它以其温润深邃的独特香韵和卓越持久的定香能力而备受赞誉。我们提供的每一块天然龙涎香均经过严谨检验，在色泽、质感、形态和香气层面上皆独一无二，并由手工精准称量。",
       cards: [
         ["天然", "在海中形成，而非人工制造。不添加任何成分。"],
         ["香水", "定香剂：让香味在肌肤上停留得更久。"],
