@@ -426,7 +426,7 @@ export default function OrderModal({ open, onClose }) {
               }}>💳</div>
               <div>
                 <div style={{ fontFamily: fonts.display, fontSize: 18, color: C.paper, fontWeight: 400 }}>
-                  {isAr ? "أدخل بيانات بطاقتك" : "Enter Your Card Details"}
+                  {m.enterCardDetails || (isAr ? "أدخل بيانات بطاقتك البنكية" : "Enter Your Card Details")}
                 </div>
                 <div style={{ fontFamily: C.mono, fontSize: 11, color: "#8d8578", marginTop: 2 }}>
                   {isAr ? `الطلب: ${orderId}` : `Order: ${orderId}`}
@@ -451,10 +451,10 @@ export default function OrderModal({ open, onClose }) {
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, color: C.gold }}>
                   <span>🧪</span>
-                  <span>{isAr ? "وضع التجربة (Sandbox Mode)" : "Sandbox Test Mode"}</span>
+                  <span>{lang === "ar" ? "وضع التجربة (Sandbox Mode)" : lang === "fr" ? "Mode Test (Sandbox)" : lang === "zh" ? "测试模式 (Sandbox)" : "Sandbox Test Mode"}</span>
                 </div>
                 <div style={{ color: "#d8cebe", fontSize: 11.5 }}>
-                  {isAr ? "استخدم البطاقة التجريبية المعتمدة:" : "Use official test card:"}
+                  {lang === "ar" ? "استخدم البطاقة التجريبية المعتمدة:" : lang === "fr" ? "Utilisez la carte de test officielle :" : lang === "zh" ? "使用官方测试银行卡：" : "Use official test card:"}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 2, color: "#ffffff" }}>
                   <span>💳 <strong>4242 4242 4242 4242</strong></span>
@@ -473,7 +473,7 @@ export default function OrderModal({ open, onClose }) {
               onClick={async () => {
                 if (!ypRef.current) return;
                 const btn = document.getElementById("yp-confirm-btn");
-                if (btn) { btn.disabled = true; btn.textContent = isAr ? "جارٍ المعالجة..." : "Processing..."; }
+                if (btn) { btn.disabled = true; btn.textContent = m.processing || (isAr ? "جارٍ المعالجة..." : "Processing..."); }
                 try {
                   const result = await ypRef.current.confirm();
                   if (result.status === "succeeded") {
@@ -509,7 +509,7 @@ export default function OrderModal({ open, onClose }) {
                 letterSpacing: ".03em",
               }}
             >
-              {isAr ? "تأكيد الدفع" : "Confirm Payment"}
+              {m.confirmPayment || (isAr ? "تأكيد الدفع" : "Confirm Payment")}
             </button>
 
             <button
@@ -528,7 +528,7 @@ export default function OrderModal({ open, onClose }) {
                 cursor: "pointer",
               }}
             >
-              {isAr ? "← رجوع" : "← Back"}
+              {m.backBtn || (isAr ? "← رجوع" : "← Back")}
             </button>
           </div>
         )}
@@ -821,7 +821,7 @@ export default function OrderModal({ open, onClose }) {
               {/* PAYMENT METHOD SELECTION CARD */}
               <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 8 }}>
                 <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".08em", color: "#a79f8f" }}>
-                  {m.payMethod || "Payment Method"}
+                  {m.payMethod || (isAr ? "طريقة الدفع والتأكيد" : "Payment Method")}
                 </span>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 9 }}>
@@ -850,7 +850,7 @@ export default function OrderModal({ open, onClose }) {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
                         <span style={{ fontWeight: 700, color: C.paper, fontSize: 14, fontFamily: fonts.ui }}>
-                          💳 {m.payCard || "Credit / Debit Card"}
+                          💳 {m.payCard || (isAr ? "بطاقة بنكية (فيزا / ماستركارد / CMI)" : "Credit / Debit Card (Visa, Mastercard, CMI)")}
                         </span>
                         {/* Accepted Card Badges */}
                         <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
@@ -866,12 +866,12 @@ export default function OrderModal({ open, onClose }) {
                         </div>
                       </div>
                       <div style={{ fontSize: 12, color: "#b3a998", marginTop: 4, lineHeight: 1.5, fontFamily: fonts.ui }}>
-                        {m.payCardDesc || "Instant 3D-Secure card payment for Morocco, Asia, Europe & Americas."}
+                        {m.payCardDesc || (isAr ? "دفع إلكتروني فوري ومشفّر 3D-Secure لجميع البطاقات المغربية والدولية" : "Instant 3D-Secure card payment for Morocco, Asia, Europe & the Americas.")}
                       </div>
                     </div>
                   </div>
 
-                  {/* Option 2: Direct Inquiry / WhatsApp */}
+                  {/* Option 2: Direct Inquiry / WhatsApp (NO COD) */}
                   <div
                     onClick={() => setPaymentMethod("direct")}
                     style={{
@@ -895,10 +895,10 @@ export default function OrderModal({ open, onClose }) {
                     />
                     <div style={{ flex: 1 }}>
                       <span style={{ fontWeight: 700, color: C.paper, fontSize: 14, fontFamily: fonts.ui }}>
-                        💬 {m.payDirect || "Direct Inquiry / WhatsApp"}
+                        💬 {m.payDirect || (isAr ? "استفسار مباشر عبر واتساب" : "Direct Inquiry / WhatsApp")}
                       </span>
                       <div style={{ fontSize: 12, color: "#b3a998", marginTop: 4, lineHeight: 1.5, fontFamily: fonts.ui }}>
-                        {m.payDirectDesc || "Personal order coordination via WhatsApp or cash on delivery in Morocco."}
+                        {m.payDirectDesc || (isAr ? "تنسيق مخصص واستفسار مباشر مع خدمة العملاء عبر الواتساب" : "Personal assistance and concierge order coordination via WhatsApp.")}
                       </div>
                     </div>
                   </div>
@@ -936,18 +936,18 @@ export default function OrderModal({ open, onClose }) {
                 m.sending
               ) : paymentMethod === "card" ? (
                 <>
-                  <span>🔒</span> {m.payCardCta || "Proceed to Secure Card Payment"}
+                  <span>🔒</span> {m.payCardCta || (isAr ? "متابعة للدفع الآمن بالبطاقة" : "Proceed to Secure Card Payment")}
                 </>
               ) : (
                 <>
-                  <span>💬</span> {m.payDirectCta || m.send}
+                  <span>💬</span> {m.payDirectCta || (isAr ? "تأكيد واستفسار عبر واتساب" : "Inquire via WhatsApp")}
                 </>
               )}
             </button>
 
             {paymentMethod === "card" && (
               <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "#8d8578", fontFamily: C.mono }}>
-                🛡️ {isAr ? "معاملة مشفرة 256-bit بمعيار الأمان البنكي 3D Secure" : "256-bit SSL encrypted & 3D Secure verified"}
+                🛡️ {m.securityBadge || (isAr ? "معاملة مشفرة 256-bit بمعيار الأمان البنكي 3D Secure" : "256-bit SSL encrypted & 3D Secure verified")}
               </div>
             )}
           </>
