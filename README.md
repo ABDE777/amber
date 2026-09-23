@@ -1,7 +1,7 @@
-# MWOA — 3anber 7out
+# MWOA — Amber
 
-A React + Vite conversion of the MWOA landing page for **3anber 7out**
-(عنبر الحوت / ambergris) — one product, sold by the gram, weighed by hand.
+A React + Vite conversion of the MWOA landing page for **Amber**
+(عنبر / ambergris) — one product, sold by the gram, weighed by hand.
 
 This started life as a single Claude **Design Canvas** file (`MWOA Amber.dc.html`,
 kept in the repo for reference) and has been rebuilt as a standalone React

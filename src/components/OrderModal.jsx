@@ -199,7 +199,7 @@ export default function OrderModal({ open, onClose }) {
         .join("\n");
     }
     return [
-      `طلب جديد — عنبر الحوت ${orderHeader}`,
+      `طلب جديد — العنبر ${orderHeader}`,
       "————————————————",
       id ? `رقم الطلب: ${id}` : "",
       `الاسم: ${form.name}`,

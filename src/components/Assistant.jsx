@@ -181,7 +181,7 @@ export default function Assistant({ onOrder }) {
                 <a
                   href={`https://wa.me/${adminDigits}?text=${encodeURIComponent(
                     isAr
-                      ? `مرحباً، أود تأكيد طلبي وتحديد طريقة الدفع (رقم الطلب: ${orderId || ""} — عنبر الحوت)`
+                      ? `مرحباً، أود تأكيد طلبي وتحديد طريقة الدفع (رقم الطلب: ${orderId || ""} — العنبر)`
                       : `Hello, I would like to confirm my order and payment method (Order ID: ${orderId || ""} — Ambergris)`
                   )}`}
                   target="_blank"

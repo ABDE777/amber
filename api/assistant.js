@@ -15,7 +15,7 @@ const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const DEFAULT_MODEL = "qwen/qwen3.8-27b";
 
 const BLOCKED_REPLY = {
-  ar: "عذراً، لا يمكنني معالجة هذا الطلب. يسعدني مساعدتك في أي سؤال عن عنبر الحوت أو في إتمام طلبك.",
+  ar: "عذراً، لا يمكنني معالجة هذا الطلب. يسعدني مساعدتك في أي سؤال عن العنبر أو في إتمام طلبك.",
   en: "Sorry, I can't process that request. I'm happy to help with any question about ambergris or with completing your order.",
 };
 
@@ -38,7 +38,7 @@ const systemPrompt = (lang) => {
   const langLine = lang === "en" ? "Reply in English only." : "أجب باللغة العربية فقط، بأسلوب مهذب ومختصر.";
   return `You are the ordering assistant for Moroccan World of Amber (MWOA). ${langLine}
 
-Product: natural raw ambergris (عنبر الحوت), sold by the gram. Do NOT state prices.
+Product: natural raw ambergris (عنبر), sold by the gram. Do NOT state prices.
 
 You MUST collect ALL 6 of these fields before calling submit_order:
   [1] Full Name (الاسم الكامل)

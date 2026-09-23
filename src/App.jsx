@@ -485,7 +485,25 @@ function ProductGallery() {
     <div className="hero-media" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 600, margin: "0 auto" }}>
       <div className="pg-stage">
         {current.type === "video" ? (
-          <video key={current.src} src={current.src} poster={current.poster} controls playsInline preload="metadata" className="pg-media" />
+          <video
+            key={current.src}
+            src={current.src}
+            poster={current.poster}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="pg-media"
+            style={{ cursor: "pointer" }}
+            onClick={(e) => {
+              if (e.currentTarget.paused) {
+                e.currentTarget.play();
+              } else {
+                e.currentTarget.pause();
+              }
+            }}
+          />
         ) : (
           <button type="button" className="pg-imgbtn" onClick={() => setLightbox(PRODUCT_IMAGES.indexOf(current.src))} aria-label={t.gallery.zoomHint} title={t.gallery.zoomHint}>
             <img src={current.src} alt={`${t.hero.title} — ${active + 1}`} className="pg-media" />
@@ -567,7 +585,7 @@ function Footer() {
   const { t, fonts } = useLang();
   return (
     <footer id="contact" style={{ padding: "90px 60px 50px", background: "#2a1e1f", borderTop: "2px solid #990000" }}>
-      <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 60, alignItems: "start" }}>
+      <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 60, alignItems: "start" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <img src="/assets/whale.png" alt="MWOA" style={{ height: 34, width: "auto", display: "block" }} />
@@ -581,11 +599,6 @@ function Footer() {
             {t.footer.wa} · {config.whatsapp}
           </a>
           <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>{config.email}</a>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#988e80", marginBottom: 4 }}>{t.footer.hours}</div>
-          <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: fonts.ui }}>{t.footer.hoursVal}</span>
-          <span style={{ fontSize: 16, color: "#b8b0a2", fontFamily: fonts.ui }}>{t.footer.ship}</span>
         </div>
       </div>
       <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#8f8474" }}>
