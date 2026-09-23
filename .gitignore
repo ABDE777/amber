@@ -2,7 +2,7 @@ node_modules
 dist
 dist-ssr
 *.local
-
+mp4
 # Environment secrets (keep .env.example tracked)
 .env
 .env.*
