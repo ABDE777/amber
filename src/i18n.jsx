@@ -629,12 +629,31 @@ export const STR = {
 
 const LangCtx = createContext(null);
 
+const SUPPORTED = Object.keys(STR);
+const STORAGE_KEY = "amber_lang";
+
+function getSavedLang() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && SUPPORTED.includes(saved)) return saved;
+  } catch {}
+  return "ar";
+}
+
 export function LangProvider({ children }) {
-  const [lang, setLang] = useState("ar");
+  const [lang, setLangState] = useState(getSavedLang);
+
+  const setLang = (newLang) => {
+    if (!SUPPORTED.includes(newLang)) return;
+    try { localStorage.setItem(STORAGE_KEY, newLang); } catch {}
+    setLangState(newLang);
+  };
+
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = STR[lang].dir;
   }, [lang]);
+
   const value = { lang, setLang, t: STR[lang], dir: STR[lang].dir, fonts: STR[lang].fonts };
   return <LangCtx.Provider value={value}>{children}</LangCtx.Provider>;
 }
