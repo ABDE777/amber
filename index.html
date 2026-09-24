@@ -123,7 +123,50 @@
         This site requires JavaScript to function. Please enable JavaScript in your browser.
       </p>
     </noscript>
-    <div id="root"></div>
+    <script>
+      try {
+        var l = localStorage.getItem("amber_lang");
+        if (l) {
+          document.documentElement.lang = l;
+          document.documentElement.dir = (l === "ar" ? "rtl" : "ltr");
+        }
+      } catch(e) {}
+    </script>
+    <div id="root">
+      <nav aria-label="MWOA" class="mwoa-nav" style="position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 40px;background:rgba(42,30,31,.9);border-bottom:1px solid rgba(153,0,0,.55)">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="/assets/whale.png" alt="MWOA" width="54" height="26" style="width:54px;height:26px;display:block" />
+          <div style="display:flex;flex-direction:column;gap:1px">
+            <span style="font-family:serif;font-size:19px;letter-spacing:.28em;color:#D4AF37;line-height:1">MWOA</span>
+            <span style="font-family:monospace;font-size:8.5px;letter-spacing:.2em;color:#c8beaf">العنبر · المغرب</span>
+          </div>
+        </div>
+      </nav>
+      <main id="main-content">
+        <section class="mwoa-hero" style="min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:40px;padding:150px 60px 90px;background:radial-gradient(1200px 780px at 26% 42%, #8a2222 0%, #5a2b2c 38%, #342726 68%, #2a1e1f 100%)">
+          <div class="hero-copy" style="max-width:640px">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:30px">
+              <span style="width:44px;height:1px;background:#D4AF37;display:block"></span>
+              <span style="font-family:monospace;font-size:11px;letter-spacing:.24em;color:#D4AF37">منتج واحد · مادة واحدة</span>
+            </div>
+            <h1 style="font-family:Amiri,serif;font-size:clamp(3.4rem, 11vw, 6rem);line-height:1.05;margin:0;color:#ede7da;font-weight:700">العنبر</h1>
+            <p style="font-family:system-ui,sans-serif;font-size:clamp(1rem, 2.6vw, 1.25rem);line-height:1.9;color:#c3bbab;margin:22px 0 0;max-width:540px">
+              جوهرة المحيط النادرة وأثمن أسرار العطور الفاخرة — أصالة طبيعية خالصة، فريدة في كل قطعة.
+            </p>
+            <div style="margin-top:40px;padding-top:30px;border-top:1px solid rgba(212,175,55,.25)">
+              <button class="btn-ruby" style="padding:16px 40px;background:#990000;color:#FFE9A8;font-size:16px;font-weight:700;border:1px solid rgba(255,184,0,.4);cursor:pointer">
+                اطلب الآن
+              </button>
+            </div>
+          </div>
+          <div class="hero-media" style="width:100%;max-width:600px;margin:0 auto">
+            <div class="pg-stage">
+              <img src="/IMG/21%20copy.jpg" alt="العنبر" class="pg-media" width="600" height="600" fetchpriority="high" style="width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:4px" />
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
