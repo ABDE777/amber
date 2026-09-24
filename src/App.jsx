@@ -399,7 +399,7 @@ function Origin() {
           <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
             <p style={{ fontSize: 17, lineHeight: 2, color: C.body, margin: 0, fontFamily: fonts.ui }}>{t.origin.p1}</p>
             <p style={{ fontSize: 17, lineHeight: 2, color: C.body, margin: 0, fontFamily: fonts.ui }}>{t.origin.p2}</p>
-            <div style={{ display: "flex", gap: 2, marginTop: 14, background: "rgba(153,0,0,.55)" }}>
+            <div className="origin-boxes" style={{ display: "flex", gap: 2, marginTop: 14, background: "rgba(153,0,0,.55)" }}>
               {t.origin.boxes.map(([k, v]) => (
                 <div key={k} style={{ background: "#3b2c2c", padding: "20px 26px", flex: 1 }}>
                   <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".16em", color: "#988e80" }}>{k}</div>
@@ -498,9 +498,21 @@ function ProductGallery() {
   const current = media[active];
   const captions = PRODUCT_IMAGES.map((_, i) => `${t.hero.title} — ${i + 1}`);
 
+  // Touch swipe support for gallery stage (ref doesn't cause re-renders)
+  const swipeRef = { x: null };
+  const handleTouchStart = (e) => { swipeRef.x = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (swipeRef.x === null) return;
+    const dx = e.changedTouches[0].clientX - swipeRef.x;
+    swipeRef.x = null;
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0) setActive((a) => (a + 1) % media.length);       // swipe left → next
+    else        setActive((a) => (a - 1 + media.length) % media.length); // swipe right → prev
+  };
+
   return (
     <div className="hero-media" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 600, margin: "0 auto" }}>
-      <div className="pg-stage">
+      <div className="pg-stage" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         {current.type === "video" ? (
           <video
             key={current.src}
@@ -515,11 +527,8 @@ function ProductGallery() {
             style={{ cursor: "pointer" }}
             aria-label={`${t.hero.title} — video`}
             onClick={(e) => {
-              if (e.currentTarget.paused) {
-                e.currentTarget.play();
-              } else {
-                e.currentTarget.pause();
-              }
+              if (e.currentTarget.paused) e.currentTarget.play();
+              else e.currentTarget.pause();
             }}
           />
         ) : (
