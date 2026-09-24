@@ -82,11 +82,6 @@ a:hover {
   }
 }
 
-/* Arabic UI font + comfortable RTL defaults */
-body {
-  font-family: Tajawal, Karla, system-ui, sans-serif;
-}
-
 input::placeholder {
   color: #6a6459;
 }
@@ -115,12 +110,6 @@ input::placeholder {
   color: var(--amber-glow);
 }
 
-.faq-row {
-  transition: background 0.2s ease;
-}
-.faq-row:hover {
-  background: rgba(212, 175, 55, 0.04);
-}
 
 /* ---------- responsive ---------- */
 
@@ -149,15 +138,6 @@ input::placeholder {
   .mwoa-section {
     padding: 84px 24px !important;
   }
-  .mwoa-gallery {
-    grid-template-columns: 1fr 1fr !important;
-    grid-template-rows: none !important;
-  }
-  .mwoa-gallery > div {
-    grid-row: auto !important;
-    grid-column: auto !important;
-    min-height: 150px;
-  }
   .mwoa-footer-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 40px !important;
@@ -180,9 +160,6 @@ input::placeholder {
     padding: 64px 18px !important;
   }
   .mwoa-cards {
-    grid-template-columns: 1fr !important;
-  }
-  .mwoa-gallery {
     grid-template-columns: 1fr !important;
   }
   .mwoa-footer-grid {

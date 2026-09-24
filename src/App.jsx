@@ -612,7 +612,9 @@ function Footer() {
 function AppInner() {
   const { dir } = useLang();
   const [modalOpen, setModalOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get("admin") === "1"; } catch { return false; }
+  });
   const openModal = () => setModalOpen(true);
 
   // Automatically open modal if customer returns with ?payment=success or ?payment=error

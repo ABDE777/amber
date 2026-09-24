@@ -193,7 +193,7 @@ export default function OrderModal({ open, onClose }) {
     const est = calculatePrice(
       form.qty,
       form.country_delivery || form.country_residence,
-      lang !== "en",
+      isAr,
       liveRates,
       liveSettings.basePriceMad,
       {
@@ -203,7 +203,15 @@ export default function OrderModal({ open, onClose }) {
         passGatewayFee: liveSettings.passGatewayFee,
       }
     );
-    const priceLine = est ? (lang === "en" ? `Estimated Value: ${est.formattedTotal} (${est.formattedUnit})` : `القيمة المقدرة: ${est.formattedTotal} (${est.formattedUnit})`) : "";
+    const priceLine = est
+      ? (lang === "en"
+        ? `Estimated Value: ${est.formattedTotal} (${est.formattedUnit})`
+        : lang === "fr"
+        ? `Valeur estimée : ${est.formattedTotal} (${est.formattedUnit})`
+        : lang === "zh"
+        ? `预估金额：${est.formattedTotal} (${est.formattedUnit})`
+        : `القيمة المقدرة: ${est.formattedTotal} (${est.formattedUnit})`)
+      : "";
 
     if (lang === "en") {
       return [
@@ -222,6 +230,41 @@ export default function OrderModal({ open, onClose }) {
         .filter(Boolean)
         .join("\n");
     }
+    if (lang === "fr") {
+      return [
+        `Nouvelle commande — Ambre gris ${orderHeader}`,
+        "————————————————",
+        id ? `N° de commande : ${id}` : "",
+        `Nom complet : ${form.name}`,
+        `Quantité : ${form.qty} g`,
+        priceLine,
+        `Mode de paiement : ${paymentMethod === "card" ? "Carte bancaire (en ligne)" : "Direct / WhatsApp"}`,
+        `E-mail : ${form.email}`,
+        `Téléphone : ${formattedPhone}`,
+        `Pays de résidence : ${form.country_residence}`,
+        `Pays de livraison : ${form.country_delivery}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+    if (lang === "zh") {
+      return [
+        `新订单 — 龙涎香 ${orderHeader}`,
+        "————————————————",
+        id ? `订单编号：${id}` : "",
+        `全名：${form.name}`,
+        `数量：${form.qty} 克`,
+        priceLine,
+        `支付方式：${paymentMethod === "card" ? "银行卡（在线）" : "直接 / WhatsApp"}`,
+        `电子邮箱：${form.email}`,
+        `电话：${formattedPhone}`,
+        `居住国家：${form.country_residence}`,
+        `配送国家：${form.country_delivery}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+    // Arabic (default)
     return [
       `طلب جديد — العنبر ${orderHeader}`,
       "————————————————",
@@ -505,8 +548,6 @@ export default function OrderModal({ open, onClose }) {
               </div>
             </div>
 
-
-
             {/* yp.js card container */}
             <div ref={ypContainerRef} id="yp-payment-container" style={{ minHeight: 180, marginBottom: 16 }} />
 
@@ -688,29 +729,6 @@ export default function OrderModal({ open, onClose }) {
                 {m.close}
               </button>
             </div>
-          </div>
-        ) : status === "redirecting" ? (
-          /* STATE: REDIRECTING TO 3D-SECURE GATEWAY */
-          <div style={{ textAlign: "center", padding: "40px 10px" }}>
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                border: "3px solid rgba(212,175,55,0.2)",
-                borderTop: "3px solid #D4AF37",
-                borderRadius: "50%",
-                margin: "0 auto 20px",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-            <h3 style={{ fontFamily: fonts.display, fontSize: 22, margin: "0 0 10px", color: C.paper, fontWeight: 400 }}>
-              {m.redirecting || "Redirecting to 3D-Secure Payment Gateway…"}
-            </h3>
-            <p style={{ fontSize: 13, color: "#a79f8f", fontFamily: fonts.ui }}>
-              {isAr
-                ? "يتم الآن تحويلك إلى نافذة الدفع المشفرة لإتمام عملية الشراء بأمان…"
-                : "Transferring you to encrypted 3D-Secure portal to complete checkout safely…"}
-            </p>
           </div>
         ) : status === "ok" ? (
           /* STATE: DIRECT INQUIRY CONFIRMATION */
