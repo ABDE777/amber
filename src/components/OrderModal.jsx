@@ -38,6 +38,7 @@ export default function OrderModal({ open, onClose }) {
   const [ypIsSandbox, setYpIsSandbox] = useState(false); // sandbox flag
   const ypRef = useRef(null);         // reference to mounted payment element
   const ypContainerRef = useRef(null); // DOM node for yp.js to render into
+  const dialogRef = useRef(null);      // focus trap root
 
   const targetCountry = form.country_delivery || form.country_residence;
   const priceEstimate = form.qty && Number(form.qty) > 0
@@ -158,6 +159,38 @@ export default function OrderModal({ open, onClose }) {
     mountYp();
     return () => { cancelled = true; };
   }, [status, ypToken, ypPublicKey, ypIsSandbox, lang, isAr]);
+
+  // Focus trap: lock focus inside the modal when open
+  useEffect(() => {
+    if (!open || !dialogRef.current) return;
+    const el = dialogRef.current;
+
+    // Move focus into modal on open
+    const firstFocusable = el.querySelector(
+      'button, input, select, a[href], [tabindex]:not([tabindex="-1"])'
+    );
+    if (firstFocusable) firstFocusable.focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") { e.preventDefault(); handleCleanClose(); return; }
+      if (e.key !== "Tab") return;
+      const focusable = Array.from(
+        el.querySelectorAll('button:not([disabled]), input, select, a[href], [tabindex]:not([tabindex="-1"])')
+      ).filter((n) => !n.closest('[hidden]') && getComputedStyle(n).display !== 'none');
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, status]);
 
   if (!open) return null;
 
@@ -373,67 +406,78 @@ export default function OrderModal({ open, onClose }) {
     onClose();
   };
 
-  const field = (label, key, type = "text", placeholder = "", extra = {}) => (
-    <label style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".08em", color: "#a79f8f" }}>{label}</span>
-      <input
-        type={type}
-        value={form[key]}
-        onChange={set(key)}
-        placeholder={placeholder}
-        {...extra}
-        style={{
-          background: "#2f2323",
-          border: `1px solid ${errors[key] ? "#e0562e" : "rgba(212,175,55,.35)"}`,
-          color: C.paper,
-          fontSize: 16,
-          fontFamily: fonts.ui,
-          padding: "13px 14px",
-          borderRadius: 4,
-          outline: "none",
-        }}
-      />
-      {errors[key] && <span style={{ color: "#ff7a52", fontSize: 12, fontFamily: fonts.ui }}>{errors[key]}</span>}
-    </label>
-  );
+  const field = (label, key, type = "text", placeholder = "", extra = {}) => {
+    const errorId = `field-err-${key}`;
+    return (
+      <label style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".08em", color: "#a79f8f" }}>{label}</span>
+        <input
+          type={type}
+          value={form[key]}
+          onChange={set(key)}
+          placeholder={placeholder}
+          aria-invalid={errors[key] ? "true" : undefined}
+          aria-describedby={errors[key] ? errorId : undefined}
+          {...extra}
+          style={{
+            background: "#2f2323",
+            border: `1px solid ${errors[key] ? "#e0562e" : "rgba(212,175,55,.35)"}`,
+            color: C.paper,
+            fontSize: 16,
+            fontFamily: fonts.ui,
+            padding: "13px 14px",
+            borderRadius: 4,
+            outline: "none",
+          }}
+        />
+        {errors[key] && <span id={errorId} role="alert" style={{ color: "#ff7a52", fontSize: 12, fontFamily: fonts.ui }}>{errors[key]}</span>}
+      </label>
+    );
+  };
 
-  const selectField = (label, key, placeholder) => (
-    <label style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".08em", color: "#a79f8f" }}>{label}</span>
-      <select
-        value={form[key]}
-        onChange={set(key)}
-        style={{
-          background: "#2f2323",
-          border: `1px solid ${errors[key] ? "#e0562e" : "rgba(212,175,55,.35)"}`,
-          color: C.paper,
-          fontSize: 15,
-          fontFamily: fonts.ui,
-          padding: "13px 14px",
-          borderRadius: 4,
-          outline: "none",
-          cursor: "pointer",
-        }}
-      >
-        <option value="">-- {placeholder} --</option>
-        {COUNTRIES.map((c) => {
-          const name = lang === "ar" ? c.nameAr : c.nameEn;
-          const curr = lang === "ar" ? c.currencyAr : c.currencyEn;
-          return (
-            <option key={c.code + c.nameEn} value={name}>
-              {name} ({c.code} · {curr})
-            </option>
-          );
-        })}
-      </select>
-      {errors[key] && <span style={{ color: "#ff7a52", fontSize: 12, fontFamily: fonts.ui }}>{errors[key]}</span>}
-    </label>
-  );
+  const selectField = (label, key, placeholder) => {
+    const errorId = `field-err-${key}`;
+    return (
+      <label style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <span style={{ fontFamily: C.mono, fontSize: 11, letterSpacing: ".08em", color: "#a79f8f" }}>{label}</span>
+        <select
+          value={form[key]}
+          onChange={set(key)}
+          aria-invalid={errors[key] ? "true" : undefined}
+          aria-describedby={errors[key] ? errorId : undefined}
+          style={{
+            background: "#2f2323",
+            border: `1px solid ${errors[key] ? "#e0562e" : "rgba(212,175,55,.35)"}`,
+            color: C.paper,
+            fontSize: 15,
+            fontFamily: fonts.ui,
+            padding: "13px 14px",
+            borderRadius: 4,
+            outline: "none",
+            cursor: "pointer",
+          }}
+        >
+          <option value="">-- {placeholder} --</option>
+          {COUNTRIES.map((c) => {
+            const name = lang === "ar" ? c.nameAr : c.nameEn;
+            const curr = lang === "ar" ? c.currencyAr : c.currencyEn;
+            return (
+              <option key={c.code + c.nameEn} value={name}>
+                {name} ({c.code} · {curr})
+              </option>
+            );
+          })}
+        </select>
+        {errors[key] && <span id={errorId} role="alert" style={{ color: "#ff7a52", fontSize: 12, fontFamily: fonts.ui }}>{errors[key]}</span>}
+      </label>
+    );
+  };
 
   return (
     <div
       dir={dir}
       onClick={handleCleanClose}
+      role="presentation"
       style={{
         position: "fixed",
         inset: 0,
@@ -448,7 +492,21 @@ export default function OrderModal({ open, onClose }) {
         overflowY: "auto",
       }}
     >
+      {/* aria-live region: screen readers announce status changes */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+        {status === "sending" && (m.sending || "Processing…")}
+        {status === "ok" && (m.okTitle || "Order received")}
+        {status === "paid_success" && (m.paymentSuccessTitle || "Payment successful")}
+        {status === "fail" && (failMessage || m.failTitle || "Error")}
+      </div>
+
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={status === "card_form"
+          ? (lang === "ar" ? "إتمام الدفع بالبطاقة" : lang === "fr" ? "Paiement par carte" : "Card Payment")
+          : m.title}
         onClick={(e) => e.stopPropagation()}
         style={{
           position: "relative",

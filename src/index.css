@@ -11,6 +11,41 @@
   box-sizing: border-box;
 }
 
+/* ─── Accessibility: global focus ring ─── */
+/* Show focus ring only for keyboard/non-pointer interaction */
+:focus-visible {
+  outline: 2px solid var(--heritage-gold);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+/* Remove default outline when mouse is used */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─── Skip-to-content link ─── */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 12px 24px;
+  background: var(--heritage-gold);
+  color: #1a0e0e;
+  font-weight: 700;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid #1a0e0e;
+  outline-offset: 2px;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -40,6 +75,12 @@ a:hover {
 ::selection {
   background: var(--ruby);
   color: var(--amber-glow);
+}
+
+/* ─── Performance: off-screen section rendering ─── */
+.mwoa-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
 }
 
 @keyframes mwoaFloat {
@@ -79,6 +120,18 @@ a:hover {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── Reduced motion: respect user OS preference ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -126,7 +126,8 @@ function LangToggle() {
 function Nav({ onOrder }) {
   const { t, fonts } = useLang();
   return (
-    <div
+    <nav
+      aria-label={t.nav.brandSub}
       className="mwoa-nav"
       style={{
         position: "fixed",
@@ -146,7 +147,7 @@ function Nav({ onOrder }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <img src="/assets/whale.png" alt="MWOA" style={{ height: 26, width: "auto", display: "block" }} />
+        <img src="/assets/whale.png" alt="MWOA" width="26" height="26" style={{ height: 26, width: "auto", display: "block" }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <span style={{ fontFamily: C.brand, fontSize: 19, letterSpacing: ".28em", color: C.gold, lineHeight: 1 }}>
             MWOA
@@ -178,6 +179,7 @@ function Nav({ onOrder }) {
         <button
           onClick={onOrder}
           className="btn-ruby mwoa-nav-order"
+          aria-label={t.nav.order}
           style={{
             padding: "10px 22px",
             background: "#c00000",
@@ -193,7 +195,7 @@ function Nav({ onOrder }) {
           {t.nav.order}
         </button>
       </div>
-    </div>
+    </nav>
   );
 }
 
@@ -357,7 +359,7 @@ function WhatIs() {
         <div>
           <SectionLabel>{t.what.label}</SectionLabel>
           <h2 style={h2}>{t.what.h2}</h2>
-          <img src="/assets/flourish.png" alt="" style={{ width: 190, marginTop: 34, display: "block", opacity: 0.9 }} />
+          <img src="/assets/flourish.png" alt="" aria-hidden="true" loading="lazy" width="190" height="60" style={{ width: 190, marginTop: 34, display: "block", opacity: 0.9 }} />
         </div>
         <div>
           <p style={{ fontSize: 21, lineHeight: 2, color: "#d5cdbd", margin: 0, fontFamily: fonts.ui }}>{t.what.body}</p>
@@ -493,9 +495,10 @@ function ProductGallery() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             className="pg-media"
             style={{ cursor: "pointer" }}
+            aria-label={`${t.hero.title} — video`}
             onClick={(e) => {
               if (e.currentTarget.paused) {
                 e.currentTarget.play();
@@ -506,11 +509,17 @@ function ProductGallery() {
           />
         ) : (
           <button type="button" className="pg-imgbtn" onClick={() => setLightbox(PRODUCT_IMAGES.indexOf(current.src))} aria-label={t.gallery.zoomHint} title={t.gallery.zoomHint}>
-            <img src={current.src} alt={`${t.hero.title} — ${active + 1}`} className="pg-media" />
+            <img
+              src={current.src}
+              alt={`${t.hero.title} — ${active + 1}`}
+              className="pg-media"
+              fetchpriority={active === 0 ? "high" : "auto"}
+              loading={active === 0 ? "eager" : "lazy"}
+            />
             <span className="pg-zoom" aria-hidden>⤢</span>
           </button>
         )}
-        <span className="pg-counter" style={{ fontFamily: C.mono }}>{active + 1} / {media.length}</span>
+        <span className="pg-counter" style={{ fontFamily: C.mono }} aria-hidden>{active + 1} / {media.length}</span>
       </div>
 
       <div className="pg-thumbs" role="tablist" aria-label={t.gallery.h2}>
@@ -588,18 +597,18 @@ function Footer() {
       <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 60, alignItems: "start" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src="/assets/whale.png" alt="MWOA" style={{ height: 34, width: "auto", display: "block" }} />
+            <img src="/assets/whale.png" alt="MWOA" width="34" height="34" loading="lazy" style={{ height: 34, width: "auto", display: "block" }} />
             <span style={{ fontFamily: C.brand, fontSize: 26, letterSpacing: ".28em", color: C.gold }}>MWOA</span>
           </div>
           <p style={{ fontSize: 15, lineHeight: 1.9, color: "#8d8578", margin: "20px 0 0", maxWidth: 340, fontFamily: fonts.ui }}>{t.footer.tagline}</p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <address style={{ display: "flex", flexDirection: "column", gap: 12, fontStyle: "normal" }}>
           <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#988e80", marginBottom: 4 }}>{t.footer.contact}</div>
-          <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>
+          <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: fonts.ui }} aria-label={`WhatsApp: ${config.whatsapp}`}>
             {t.footer.wa} · {config.whatsapp}
           </a>
           <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>{config.email}</a>
-        </div>
+        </address>
       </div>
       <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#8f8474" }}>
         <span style={{ color: "#c00000", fontSize: 13, letterSpacing: ".3em" }}>© MWOA · 2026</span>
@@ -653,13 +662,19 @@ function AppInner() {
 
   return (
     <div dir={dir} style={{ background: "#342726", overflowX: "hidden" }}>
+      {/* Skip-to-content link for keyboard users */}
+      <a href="#main-content" className="skip-link">
+        {dir === "rtl" ? "انتقل إلى المحتوى الرئيسي" : "Skip to main content"}
+      </a>
       <Nav onOrder={openModal} />
-      <Hero onOrder={openModal} />
-      <Marquee />
-      <WhatIs />
-      <Origin />
-      <Authenticity />
-      <Footer />
+      <main id="main-content" tabIndex={-1}>
+        <Hero onOrder={openModal} />
+        <Marquee />
+        <WhatIs />
+        <Origin />
+        <Authenticity />
+        <Footer />
+      </main>
       <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
       <AdminOrdersModal open={adminOpen} onClose={() => setAdminOpen(false)} />
     </div>

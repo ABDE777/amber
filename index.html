@@ -3,20 +3,114 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- ─── Primary SEO ─── -->
     <title>العنبر · Moroccan World of Amber (MWOA)</title>
     <meta
       name="description"
-      content="العنبر — منتج واحد، يُباع بالغرام، ويُوزن يدوياً. توصيل إلى كل أنحاء المغرب."
+      content="العنبر — منتج واحد، يُباع بالغرام، ويُوزن يدوياً. أصالة طبيعية خالصة من الشاطئ المغربي. Ambergris — one product, sold by the gram, hand-weighed. Natural ambergris from Morocco."
     />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2a1e1f" />
+    <link rel="canonical" href="https://mwoa.vercel.app/" />
+
+    <!-- ─── Open Graph ─── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MWOA — Moroccan World of Amber" />
+    <meta property="og:title" content="العنبر · Moroccan World of Amber (MWOA)" />
+    <meta
+      property="og:description"
+      content="Rare natural ambergris from Morocco's Atlantic coast — sold by the gram, hand-weighed, and sealed for authenticity."
+    />
+    <meta property="og:url" content="https://mwoa.vercel.app/" />
+    <meta property="og:image" content="https://mwoa.vercel.app/assets/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="ar_MA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+
+    <!-- ─── Twitter / X Card ─── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MWOA — Moroccan World of Amber" />
+    <meta
+      name="twitter:description"
+      content="Rare natural ambergris, sold by the gram. Authentic, hand-weighed, sealed."
+    />
+    <meta name="twitter:image" content="https://mwoa.vercel.app/assets/og-cover.png" />
+
+    <!-- ─── Favicon ─── -->
     <link rel="icon" type="image/png" href="/assets/whale.png" />
+    <link rel="apple-touch-icon" href="/assets/whale.png" />
+
+    <!-- ─── Fonts ─── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preload the above-the-fold display font (Marcellus used in hero h1) -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700&display=swap"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- ─── Structured Data ─── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://mwoa.vercel.app/#org",
+          "name": "Moroccan World of Amber (MWOA)",
+          "url": "https://mwoa.vercel.app/",
+          "logo": "https://mwoa.vercel.app/assets/whale.png",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+212631883412",
+            "contactType": "sales",
+            "availableLanguage": ["Arabic", "French", "English", "Chinese"]
+          }
+        },
+        {
+          "@type": "Product",
+          "@id": "https://mwoa.vercel.app/#product",
+          "name": "Ambergris — العنبر",
+          "description": "Rare natural ambergris collected from Morocco's Atlantic coast. Authenticated, hand-weighed, and sealed. A prized fixative for fine perfumery.",
+          "brand": {
+            "@type": "Brand",
+            "name": "MWOA"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": "https://mwoa.vercel.app/",
+            "priceCurrency": "MAD",
+            "availability": "https://schema.org/InStock",
+            "seller": { "@id": "https://mwoa.vercel.app/#org" }
+          },
+          "category": "Perfumery Ingredients"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://mwoa.vercel.app/#website",
+          "url": "https://mwoa.vercel.app/",
+          "name": "MWOA — Moroccan World of Amber",
+          "publisher": { "@id": "https://mwoa.vercel.app/#org" },
+          "inLanguage": ["ar", "en", "fr", "zh"]
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
+    <noscript>
+      <p style="font-family:sans-serif;padding:40px;text-align:center;color:#2a1e1f">
+        This site requires JavaScript to function. Please enable JavaScript in your browser.
+      </p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
