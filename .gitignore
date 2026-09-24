@@ -12,3 +12,4 @@ public/assets/*.mp4
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+_originals_backup/

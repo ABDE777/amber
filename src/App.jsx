@@ -147,12 +147,12 @@ function Nav({ onOrder }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <img src="/assets/whale.png" alt="MWOA" width="26" height="26" style={{ height: 26, width: "auto", display: "block" }} />
+        <img src="/assets/whale.png" alt="MWOA" width="54" height="26" style={{ height: 26, width: "auto", display: "block" }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <span style={{ fontFamily: C.brand, fontSize: 19, letterSpacing: ".28em", color: C.gold, lineHeight: 1 }}>
             MWOA
           </span>
-          <span style={{ fontFamily: C.mono, fontSize: 8.5, letterSpacing: ".2em", color: "#988e80" }}>
+          <span style={{ fontFamily: C.mono, fontSize: 8.5, letterSpacing: ".2em", color: "#c8beaf" }}>
             {t.nav.brandSub}
           </span>
         </div>
@@ -359,7 +359,7 @@ function WhatIs() {
         <div>
           <SectionLabel>{t.what.label}</SectionLabel>
           <h2 style={h2}>{t.what.h2}</h2>
-          <img src="/assets/flourish.png" alt="" aria-hidden="true" loading="lazy" width="190" height="60" style={{ width: 190, marginTop: 34, display: "block", opacity: 0.9 }} />
+          <img src="/assets/flourish.png" alt="" aria-hidden="true" loading="lazy" width="190" height="55" style={{ width: 190, height: "auto", marginTop: 34, display: "block", opacity: 0.9 }} />
         </div>
         <div>
           <p style={{ fontSize: 21, lineHeight: 2, color: "#d5cdbd", margin: 0, fontFamily: fonts.ui }}>{t.what.body}</p>
@@ -367,7 +367,7 @@ function WhatIs() {
             {t.what.cards.map(([title, text]) => (
               <div key={title} style={{ background: "linear-gradient(160deg,#4b3231,#3b2c2c)", padding: "28px 24px", borderTop: "2px solid #990000" }}>
                 <div style={{ fontFamily: fonts.display, fontSize: 28, fontWeight: 700, color: C.amber }}>{title}</div>
-                <div style={{ fontSize: 15, lineHeight: 1.9, color: "#a9a193", marginTop: 10, fontFamily: fonts.ui }}>{text}</div>
+                <div style={{ fontSize: 15, lineHeight: 1.9, color: "#c8beaf", marginTop: 10, fontFamily: fonts.ui }}>{text}</div>
               </div>
             ))}
           </div>
@@ -513,8 +513,11 @@ function ProductGallery() {
               src={current.src}
               alt={`${t.hero.title} — ${active + 1}`}
               className="pg-media"
-              fetchpriority={active === 0 ? "high" : "auto"}
+              width="600"
+              height="600"
+              fetchPriority={active === 0 ? "high" : "auto"}
               loading={active === 0 ? "eager" : "lazy"}
+              decoding="async"
             />
             <span className="pg-zoom" aria-hidden>⤢</span>
           </button>
@@ -533,7 +536,7 @@ function ProductGallery() {
             onClick={() => setActive(i)}
             aria-label={`${m.type === "video" ? "▶ " : ""}${t.hero.title} ${i + 1}`}
           >
-            <img src={m.poster || m.src} alt="" loading="lazy" />
+            <img src={m.poster || m.src} alt="" loading="lazy" width="76" height="76" />
             {m.type === "video" && <span className="pg-thumb-play" aria-hidden>▶</span>}
           </button>
         ))}
@@ -575,10 +578,10 @@ function Authenticity() {
         <div style={{ position: "relative", padding: 44, border: "1px solid rgba(212,175,55,.45)", background: "linear-gradient(150deg,#642a2b,#342726)" }}>
           <div style={{ position: "absolute", inset: 10, border: "1px solid rgba(212,175,55,.18)", pointerEvents: "none" }} />
           <div style={{ position: "relative", textAlign: "center" }}>
-            <img src="/assets/whale.png" alt="" style={{ width: 120, display: "block", margin: "0 auto 22px" }} />
+            <img src="/assets/whale.png" alt="" width="120" height="57" style={{ width: 120, height: "auto", display: "block", margin: "0 auto 22px" }} />
             <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".22em", color: C.gold }}>{t.proof.certLabel}</div>
             <div style={{ fontFamily: fonts.display, fontSize: 36, fontWeight: 700, color: C.paper, margin: "14px 0 6px" }}>{t.proof.certTitle}</div>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 20, marginTop: 34, paddingTop: 22, borderTop: "1px solid rgba(212,175,55,.25)", fontFamily: C.mono, fontSize: 11, letterSpacing: ".1em", color: "#8d8578" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 20, marginTop: 34, paddingTop: 22, borderTop: "1px solid rgba(212,175,55,.25)", fontFamily: C.mono, fontSize: 11, letterSpacing: ".1em", color: "#c8beaf" }}>
               {t.proof.cert.map((c) => (
                 <span key={c}>{c}</span>
               ))}
@@ -597,21 +600,21 @@ function Footer() {
       <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 60, alignItems: "start" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src="/assets/whale.png" alt="MWOA" width="34" height="34" loading="lazy" style={{ height: 34, width: "auto", display: "block" }} />
+            <img src="/assets/whale.png" alt="MWOA" width="71" height="34" loading="lazy" style={{ height: 34, width: "auto", display: "block" }} />
             <span style={{ fontFamily: C.brand, fontSize: 26, letterSpacing: ".28em", color: C.gold }}>MWOA</span>
           </div>
-          <p style={{ fontSize: 15, lineHeight: 1.9, color: "#8d8578", margin: "20px 0 0", maxWidth: 340, fontFamily: fonts.ui }}>{t.footer.tagline}</p>
+          <p style={{ fontSize: 15, lineHeight: 1.9, color: "#c8beaf", margin: "20px 0 0", maxWidth: 340, fontFamily: fonts.ui }}>{t.footer.tagline}</p>
         </div>
         <address style={{ display: "flex", flexDirection: "column", gap: 12, fontStyle: "normal" }}>
-          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#988e80", marginBottom: 4 }}>{t.footer.contact}</div>
-          <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: fonts.ui }} aria-label={`WhatsApp: ${config.whatsapp}`}>
+          <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#d4af37", marginBottom: 4 }}>{t.footer.contact}</div>
+          <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: fonts.ui, color: "#ede7da" }} aria-label={`WhatsApp: ${config.whatsapp}`}>
             {t.footer.wa} · {config.whatsapp}
           </a>
-          <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui }}>{config.email}</a>
+          <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui, color: "#ede7da" }}>{config.email}</a>
         </address>
       </div>
-      <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#8f8474" }}>
-        <span style={{ color: "#c00000", fontSize: 13, letterSpacing: ".3em" }}>© MWOA · 2026</span>
+      <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#c8beaf" }}>
+        <span style={{ color: "#f0a8a8", fontSize: 13, letterSpacing: ".3em" }}>© MWOA · 2026</span>
         <span>{t.footer.country}</span>
       </div>
     </footer>
