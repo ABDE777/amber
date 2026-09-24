@@ -32,7 +32,7 @@ export default function AdminOrdersModal({ open, onClose }) {
     USD: 40,
   };
 
-  // Price per gram & currency settings
+  // Price per gram & currency settings (local display only for revenue analytics)
   const [currency, setCurrency] = useState(() => {
     return localStorage.getItem("mwoa_currency") || "MAD";
   });
@@ -43,6 +43,77 @@ export default function AdminOrdersModal({ open, onClose }) {
     if (cur === "MAD" && saved === 40) return 400;
     return saved || DEFAULT_RATES[cur] || 400;
   });
+
+  // Fee settings — loaded from /api/settings and saved to server
+  const [feePricePerGram, setFeePricePerGram] = useState(400); // MAD / gram
+  const [taxMad, setTaxMad] = useState(0);                     // flat MAD tax
+  const [shippingMad, setShippingMad] = useState(0);           // flat MAD
+  const [packagingMad, setPackagingMad] = useState(0);         // flat MAD
+  const [passGatewayFee, setPassGatewayFee] = useState(true);  // auto-gross up YouCan Pay fee
+  const [savingFees, setSavingFees] = useState(false);
+  const [feesSaved, setFeesSaved] = useState(false);
+
+  const loadSettings = async () => {
+    try {
+      const res = await fetch("/api/settings");
+      const data = await res.json();
+      if (data.ok && data.settings) {
+        const s = data.settings;
+        if (Number(s.base_price_mad) > 0) {
+          setFeePricePerGram(Number(s.base_price_mad));
+          // Also sync the local analytics price if currency is MAD
+          if (currency === "MAD") {
+            setPricePerGram(Number(s.base_price_mad));
+            localStorage.setItem("mwoa_price_per_gram", String(Number(s.base_price_mad)));
+          }
+        }
+        const t = s.tax_mad !== undefined ? Number(s.tax_mad) : Number(s.tax_percent);
+        setTaxMad(Math.max(0, t || 0));
+        setShippingMad(Math.max(0, Number(s.shipping_mad) || 0));
+        setPackagingMad(Math.max(0, Number(s.packaging_mad) || 0));
+        setPassGatewayFee(s.pass_gateway_fee !== undefined ? Boolean(s.pass_gateway_fee) : true);
+      }
+    } catch (err) {
+      console.warn("[Admin] Could not load settings:", err.message);
+    }
+  };
+
+  const saveFees = async () => {
+    setSavingFees(true);
+    setFeesSaved(false);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base_price_mad: feePricePerGram,
+          tax_mad: taxMad,
+          shipping_mad: shippingMad,
+          packaging_mad: packagingMad,
+          pass_gateway_fee: passGatewayFee,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setFeesSaved(true);
+        // Sync analytics display
+        if (currency === "MAD") {
+          setPricePerGram(feePricePerGram);
+          localStorage.setItem("mwoa_price_per_gram", String(feePricePerGram));
+        }
+        setToastMsg(isAr ? "✅ تم حفظ الإعدادات بنجاح" : "✅ Settings saved successfully");
+        setTimeout(() => { setToastMsg(""); setFeesSaved(false); }, 3000);
+      } else {
+        setToastMsg(isAr ? "❌ فشل في حفظ الإعدادات" : "❌ Failed to save settings");
+        setTimeout(() => setToastMsg(""), 3000);
+      }
+    } catch (err) {
+      setToastMsg(isAr ? "❌ خطأ في الاتصال" : "❌ Connection error");
+      setTimeout(() => setToastMsg(""), 3000);
+    } finally {
+      setSavingFees(false);
+    }
+  };
 
   const handlePriceChange = (val) => {
     const num = Math.max(0, Number(val) || 0);
@@ -80,6 +151,7 @@ export default function AdminOrdersModal({ open, onClose }) {
   useEffect(() => {
     if (open) {
       fetchOrders();
+      loadSettings();
     } else {
       setSelectedOrder(null);
     }
@@ -226,9 +298,9 @@ export default function AdminOrdersModal({ open, onClose }) {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            {/* Price Controller */}
+            {/* Analytics currency selector (local display) */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#1c1011", padding: "4px 8px", borderRadius: 6, border: "1px solid rgba(212,175,55,.3)" }}>
-              <span style={{ fontSize: 11, color: C.gold }}>{isAr ? "سعر الغرام:" : "Price/g:"}</span>
+              <span style={{ fontSize: 11, color: C.gold }}>{isAr ? "عملة التحليل:" : "Analytics:"}</span>
               <input
                 type="number"
                 value={pricePerGram}
@@ -386,6 +458,147 @@ export default function AdminOrdersModal({ open, onClose }) {
             <div style={{ fontSize: 11, color: C.body, marginTop: 4 }}>
               {shippedGrams} g • {shippedCount} {isAr ? "مشحون" : "shipped"}
             </div>
+          </div>
+        </div>
+
+        {/* ⚙️ PRICING & FEES SETTINGS — Full width prominent card */}
+        <div style={{
+          margin: "0 24px 12px",
+          background: "linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(153,0,0,0.12) 100%)",
+          border: "1.5px solid rgba(212,175,55,0.45)",
+          borderRadius: 10,
+          padding: "16px 20px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
+            <div style={{ fontSize: 13, color: C.gold, fontWeight: 800, letterSpacing: ".08em", display: "flex", alignItems: "center", gap: 8 }}>
+              <span>⚙️</span>
+              <span>{isAr ? "إعدادات الأسعار والرسوم (تُطبَّق على المشترين)" : "Pricing & Fees Settings (applied to buyers)"}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              {/* Price per gram */}
+              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 10.5, color: "#a79f8f", fontWeight: 700, letterSpacing: ".06em" }}>
+                  {isAr ? "💰 سعر الغرام (درهم)" : "💰 PRICE / GRAM (MAD)"}
+                </span>
+                <input
+                  type="number" min="1" step="1"
+                  value={feePricePerGram}
+                  onChange={(e) => setFeePricePerGram(Math.max(0, Number(e.target.value) || 0))}
+                  style={{
+                    width: 80, padding: "8px 10px",
+                    background: "#2a1b1c", border: "1px solid rgba(212,175,55,.5)",
+                    borderRadius: 6, color: "#FFE9A8", fontSize: 18,
+                    fontWeight: 800, textAlign: "center", outline: "none",
+                    fontFamily: "monospace",
+                  }}
+                />
+              </label>
+
+              {/* Tax */}
+              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 10.5, color: "#a79f8f", fontWeight: 700, letterSpacing: ".06em" }}>
+                  {isAr ? "🧾 الضريبة (درهم MAD)" : "🧾 TAX (MAD)"}
+                </span>
+                <input
+                  type="number" min="0" step="1"
+                  value={taxMad}
+                  onChange={(e) => setTaxMad(Math.max(0, Number(e.target.value) || 0))}
+                  style={{
+                    width: 76, padding: "8px 10px",
+                    background: "#2a1b1c", border: "1px solid rgba(212,175,55,.5)",
+                    borderRadius: 6, color: "#FFE9A8", fontSize: 18,
+                    fontWeight: 800, textAlign: "center", outline: "none",
+                    fontFamily: "monospace",
+                  }}
+                />
+              </label>
+
+              {/* Shipping */}
+              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 10.5, color: "#a79f8f", fontWeight: 700, letterSpacing: ".06em" }}>
+                  {isAr ? "🚚 الشحن (درهم)" : "🚚 SHIPPING (MAD)"}
+                </span>
+                <input
+                  type="number" min="0" step="5"
+                  value={shippingMad}
+                  onChange={(e) => setShippingMad(Math.max(0, Number(e.target.value) || 0))}
+                  style={{
+                    width: 80, padding: "8px 10px",
+                    background: "#2a1b1c", border: "1px solid rgba(212,175,55,.5)",
+                    borderRadius: 6, color: "#FFE9A8", fontSize: 18,
+                    fontWeight: 800, textAlign: "center", outline: "none",
+                    fontFamily: "monospace",
+                  }}
+                />
+              </label>
+
+              {/* Packaging */}
+              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 10.5, color: "#a79f8f", fontWeight: 700, letterSpacing: ".06em" }}>
+                  {isAr ? "📦 التغليف (درهم)" : "📦 PACKAGING (MAD)"}
+                </span>
+                <input
+                  type="number" min="0" step="5"
+                  value={packagingMad}
+                  onChange={(e) => setPackagingMad(Math.max(0, Number(e.target.value) || 0))}
+                  style={{
+                    width: 80, padding: "8px 10px",
+                    background: "#2a1b1c", border: "1px solid rgba(212,175,55,.5)",
+                    borderRadius: 6, color: "#FFE9A8", fontSize: 18,
+                    fontWeight: 800, textAlign: "center", outline: "none",
+                    fontFamily: "monospace",
+                  }}
+                />
+              </label>
+
+              {/* Pass Gateway Fee checkbox */}
+              <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", background: "#1c1011", padding: "8px 12px", borderRadius: 6, border: "1px solid rgba(212,175,55,.3)", alignSelf: "flex-end" }}>
+                <input
+                  type="checkbox"
+                  checked={passGatewayFee}
+                  onChange={(e) => setPassGatewayFee(e.target.checked)}
+                  style={{ width: 16, height: 16, accentColor: "#D4AF37", cursor: "pointer" }}
+                />
+                <span style={{ fontSize: 11, color: "#FFE9A8", fontWeight: 700 }}>
+                  {isAr ? "💳 تغطية عمولة YouCan Pay (3.9% + 2 DH)" : "💳 Auto-pass card fee (3.9% + 2 MAD)"}
+                </span>
+              </label>
+
+              {/* Save button */}
+              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 10.5, color: "transparent", userSelect: "none" }}>–</span>
+                <button
+                  onClick={saveFees}
+                  disabled={savingFees}
+                  style={{
+                    padding: "8px 22px",
+                    background: feesSaved
+                      ? "#25D366"
+                      : "linear-gradient(135deg, #D4AF37, #b8922e)",
+                    color: feesSaved ? "#fff" : "#1a0e0e",
+                    border: "none",
+                    borderRadius: 6,
+                    fontSize: 14,
+                    fontWeight: 800,
+                    cursor: savingFees ? "wait" : "pointer",
+                    transition: "background .3s",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 4px 14px rgba(212,175,55,0.3)",
+                  }}
+                >
+                  {savingFees ? "⏳…" : feesSaved
+                    ? (isAr ? "✅ تم الحفظ" : "✅ Saved!")
+                    : (isAr ? "💾 حفظ الإعدادات" : "💾 Save Settings")}
+                </button>
+              </label>
+            </div>
+          </div>
+
+          {/* Helper note */}
+          <div style={{ marginTop: 10, fontSize: 11.5, color: "#8d8578", fontFamily: "monospace" }}>
+            {isAr
+              ? `📌 معادلة حماية أرباحك: المجموع = (سعر/غ × الكمية) + ضريبة ${taxMad} درهم + شحن ${shippingMad} درهم + تغليف ${packagingMad} درهم ${passGatewayFee ? "+ تغطية عمولة YouCan Pay تلقائيًا لتصلك أرباحك صافية 100% دون أي نقصان." : "."}`
+              : `📌 Win-Win Formula: Total = (price/g × qty) + ${taxMad} MAD tax + ${shippingMad} MAD shipping + ${packagingMad} MAD packaging ${passGatewayFee ? "+ automatic YouCan Pay fee gross-up so you net 100% of your funds." : "."}`}
           </div>
         </div>
 

@@ -206,6 +206,79 @@ export default async function handler(req, res) {
       outline: none;
     }
     .search-bar:focus { border-color: #D4AF37; }
+
+    /* Fees & Pricing Settings Card */
+    .fees-card {
+      background: linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(153,0,0,0.12) 100%);
+      border: 1.5px solid rgba(212,175,55,0.45);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .fees-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(212,175,55,0.25);
+    }
+    .fees-inputs {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .fee-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .fee-field label {
+      font-size: 11px;
+      color: #D4AF37;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .fee-field input {
+      width: 100px;
+      padding: 8px 10px;
+      background: #2a1b1c;
+      border: 1px solid rgba(212,175,55,.5);
+      border-radius: 6px;
+      color: #FFE9A8;
+      font-size: 16px;
+      font-weight: 800;
+      text-align: center;
+      outline: none;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .fee-field input:focus {
+      border-color: #FFE9A8;
+      box-shadow: 0 0 8px rgba(212,175,55,0.4);
+    }
+    .btn-save-fees {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      background: linear-gradient(135deg, #D4AF37 0%, #aa8010 100%);
+      color: #1a0f10;
+      font-weight: 800;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(212,175,55,.35);
+      transition: all .2s;
+    }
+    .btn-save-fees:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(212,175,55,.5);
+    }
     
     /* Modal Backdrop */
     #modalBackdrop {
@@ -372,6 +445,63 @@ export default async function handler(req, res) {
       </div>
     </div>
 
+    <!-- ⚙️ PRICING, SHIPPING, TAXES & PACKAGING SETTINGS CARD -->
+    <div class="fees-card" id="feesCard">
+      <div class="fees-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:20px;">⚙️</span>
+          <div>
+            <div style="font-size:14px; font-weight:800; color:#D4AF37;" id="feesTitle">إعدادات الأسعار والرسوم والشحن والتغليف (المطبقة على المشترين)</div>
+            <div style="font-size:11px; color:#a79f8f;" id="feesSub">تُحتسب في المتجر تلقائياً ضمن السعر الإجمالي</div>
+          </div>
+        </div>
+        <button type="button" class="btn-save-fees" id="btnSaveFees" onclick="saveAllFees()">
+          <span>💾</span> <span id="lblSaveBtn">حفظ التغييرات</span>
+        </button>
+      </div>
+
+      <div class="fees-inputs">
+        <!-- Base Price per Gram -->
+        <div class="fee-field">
+          <label id="lblFeePrice">💰 سعر الغرام (درهم MAD)</label>
+          <input type="number" id="inputFeePrice" min="1" step="1" value="400" oninput="onFeePriceInput(this.value)">
+        </div>
+
+        <!-- Tax (MAD) -->
+        <div class="fee-field">
+          <label id="lblFeeTax">🧾 الضريبة (درهم MAD)</label>
+          <input type="number" id="inputFeeTax" min="0" step="1" value="0">
+        </div>
+
+        <!-- Shipping MAD -->
+        <div class="fee-field">
+          <label id="lblFeeShip">🚚 مصاريف الشحن (درهم MAD)</label>
+          <input type="number" id="inputFeeShip" min="0" step="5" value="0">
+        </div>
+
+        <!-- Packaging MAD -->
+        <div class="fee-field">
+          <label id="lblFeePkg">📦 مصاريف التغليف (درهم MAD)</label>
+          <input type="number" id="inputFeePkg" min="0" step="5" value="0">
+        </div>
+
+        <!-- Auto-pass YouCan Pay fee checkbox -->
+        <div style="display:flex; align-items:center; gap:8px; background:#1c1011; padding:9px 14px; border-radius:6px; border:1px solid rgba(212,175,55,.35); margin-top:2px;">
+          <input type="checkbox" id="checkPassGateway" checked style="width:18px; height:18px; accent-color:#D4AF37; cursor:pointer;">
+          <label for="checkPassGateway" style="font-size:11.5px; color:#FFE9A8; font-weight:700; cursor:pointer;" id="lblPassGateway">
+            💳 تغطية عمولة YouCan Pay (3.9% + 2 DH) تلقائياً على المشتري لتصلك أموالك صافية 100%
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap; gap:8px;">
+        <div style="font-size:11px; color:#8d8578;" id="feesHint">
+          💡 العميل يرى فقط: <b>سعر الغرام</b> و <b>المجموع الكلي</b> (شاملاً الشحن، التغليف، والضريبة) بدون تفاصيل الرسوم.
+        </div>
+        <div id="feeSaveMsg" style="font-size:12px; font-weight:bold; color:#25D366; display:none;"></div>
+      </div>
+    </div>
+
     <!-- Live Search -->
     <input type="text" id="orderSearch" class="search-bar" placeholder="🔍 ابحث برقم الطلب، اسم العميل، أو الحالة..." onkeyup="filterOrders()">
 
@@ -409,29 +539,104 @@ export default async function handler(req, res) {
 
     document.getElementById('inputPrice').value = pricePerGram;
     document.getElementById('selectCurr').value = currency;
+    document.getElementById('inputFeePrice').value = pricePerGram;
 
-    // Sync from server on load (server value is source of truth for storefront)
+    // Sync all settings from server on load (server value is source of truth for storefront)
     fetch('/api/settings')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        const serverPrice = Number(data?.settings?.base_price_mad);
+        const s = data?.settings || {};
+        const serverPrice = Number(s.base_price_mad);
         if (serverPrice > 0) {
           pricePerGram = serverPrice;
           document.getElementById('inputPrice').value = serverPrice;
+          document.getElementById('inputFeePrice').value = serverPrice;
           localStorage.setItem('mwoa_price_per_gram', String(serverPrice));
           recalculateStats();
+        }
+        const t = s.tax_mad !== undefined ? s.tax_mad : s.tax_percent;
+        if (t !== undefined) {
+          document.getElementById('inputFeeTax').value = t;
+        }
+        if (s.shipping_mad !== undefined) {
+          document.getElementById('inputFeeShip').value = s.shipping_mad;
+        }
+        if (s.packaging_mad !== undefined) {
+          document.getElementById('inputFeePkg').value = s.packaging_mad;
+        }
+        if (s.pass_gateway_fee !== undefined) {
+          document.getElementById('checkPassGateway').checked = Boolean(s.pass_gateway_fee);
         }
       })
       .catch(() => {});
 
+    function onFeePriceInput(val) {
+      const v = Math.max(0, Number(val) || 0);
+      pricePerGram = v;
+      document.getElementById('inputPrice').value = v;
+      recalculateStats();
+    }
+
+    async function saveAllFees() {
+      const btn = document.getElementById('btnSaveFees');
+      const origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+
+      const payload = {
+        base_price_mad: Math.max(1, Number(document.getElementById('inputFeePrice').value) || 400),
+        tax_mad: Math.max(0, Number(document.getElementById('inputFeeTax').value) || 0),
+        shipping_mad: Math.max(0, Number(document.getElementById('inputFeeShip').value) || 0),
+        packaging_mad: Math.max(0, Number(document.getElementById('inputFeePkg').value) || 0),
+        pass_gateway_fee: document.getElementById('checkPassGateway').checked,
+      };
+
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          pricePerGram = payload.base_price_mad;
+          document.getElementById('inputPrice').value = pricePerGram;
+          localStorage.setItem('mwoa_price_per_gram', String(pricePerGram));
+          recalculateStats();
+
+          btn.style.background = '#25D366';
+          btn.style.color = '#fff';
+          btn.innerHTML = '<span>✅</span> ' + (currentLang === 'ar' ? 'تم الحفظ بنجاح!' : 'Saved Successfully!');
+
+          setTimeout(() => {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = '<span>💾</span> <span id="lblSaveBtn">' + (currentLang === 'ar' ? 'حفظ التغييرات' : 'Save Settings') + '</span>';
+          }, 2500);
+        } else {
+          alert('Failed to save settings: ' + res.status);
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.innerHTML = origHtml;
+        }
+      } catch (err) {
+        alert('Network error saving settings');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = origHtml;
+      }
+    }
+
     function onPriceChange(val) {
       pricePerGram = Math.max(0, Number(val) || 0);
+      document.getElementById('inputFeePrice').value = pricePerGram;
       localStorage.setItem('mwoa_price_per_gram', String(pricePerGram));
       // Persist to server so the storefront always sees the latest price
       fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: 'base_price_mad', value: pricePerGram })
+        body: JSON.stringify({ base_price_mad: pricePerGram })
       }).catch(() => {});
       recalculateStats();
     }
@@ -488,7 +693,16 @@ export default async function handler(req, res) {
         pending: "🟡 انتظار",
         paid: "🟢 مدفوع",
         shipped: "🚚 مشحون",
-        cancelled: "❌ ملغى"
+        cancelled: "❌ ملغى",
+        feesTitle: "⚙️ إعدادات الأسعار والرسوم والشحن والتغليف (المطبقة على المشترين)",
+        feesSub: "تُحتسب في المتجر تلقائياً ضمن السعر الإجمالي",
+        lblSaveBtn: "حفظ التغييرات",
+        lblFeePrice: "💰 سعر الغرام (درهم MAD)",
+        lblFeeTax: "🧾 الضريبة (درهم MAD)",
+        lblFeeShip: "🚚 مصاريف الشحن (درهم MAD)",
+        lblFeePkg: "📦 مصاريف التغليف (درهم MAD)",
+        lblPassGateway: "💳 تغطية عمولة YouCan Pay (3.9% + 2 DH) تلقائياً على المشتري لتصلك أموالك صافية 100%",
+        feesHint: "💡 معادلة حماية أرباحك: المجموع النهائي للزبون يشمل تلقائياً رسوم YouCan Pay (3.9% + 2 دراهم)، وبذلك عندما يقتطع YouCan عمولته يصلك حسابك البنكي صافياً بالدرهم كاملاً دون أي نقص."
       },
       en: {
         pageTitle: "Revenue & Money Dashboard · Moroccan World of Amber (MWOA)",
@@ -525,7 +739,16 @@ export default async function handler(req, res) {
         pending: "🟡 Pending",
         paid: "🟢 Paid",
         shipped: "🚚 Shipped",
-        cancelled: "❌ Cancel"
+        cancelled: "❌ Cancel",
+        feesTitle: "⚙️ Pricing, Shipping & Fee Settings (Applied to Storefront)",
+        feesSub: "Automatically calculated into client's final total",
+        lblSaveBtn: "Save Settings",
+        lblFeePrice: "💰 Price / gram (MAD)",
+        lblFeeTax: "🧾 Tax (MAD)",
+        lblFeeShip: "🚚 Shipping Fee (MAD)",
+        lblFeePkg: "📦 Packaging Fee (MAD)",
+        lblPassGateway: "💳 Auto-pass YouCan Pay fee (3.9% + 2 MAD) to buyer so you net 100% of your money",
+        feesHint: "💡 Win-Win Formula: The client's final total automatically covers YouCan Pay's commission (3.9% + 2 MAD). When YouCan takes its fee, your bank receives 100% of your net money with zero deduction."
       }
     };
 
@@ -580,6 +803,18 @@ export default async function handler(req, res) {
       document.getElementById("lblPaidRevenue").innerText = d.paidRev;
       document.getElementById("lblPendingRevenue").innerText = d.pendingRev;
       document.getElementById("lblShipped").innerText = d.shippedLbl;
+
+      document.getElementById("feesTitle").innerText = d.feesTitle;
+      document.getElementById("feesSub").innerText = d.feesSub;
+      const saveBtnLbl = document.getElementById("lblSaveBtn");
+      if (saveBtnLbl) saveBtnLbl.innerText = d.lblSaveBtn;
+      document.getElementById("lblFeePrice").innerText = d.lblFeePrice;
+      document.getElementById("lblFeeTax").innerText = d.lblFeeTax;
+      document.getElementById("lblFeeShip").innerText = d.lblFeeShip;
+      document.getElementById("lblFeePkg").innerText = d.lblFeePkg;
+      const passGatewayEl = document.getElementById("lblPassGateway");
+      if (passGatewayEl) passGatewayEl.innerText = d.lblPassGateway;
+      document.getElementById("feesHint").innerHTML = d.feesHint;
 
       document.getElementById("orderSearch").placeholder = d.searchPh;
       document.getElementById("thId").innerText = d.thId;
