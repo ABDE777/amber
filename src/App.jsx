@@ -1,11 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { config } from "./config.js";
 import { LangProvider, useLang } from "./i18n.jsx";
-import OrderModal from "./components/OrderModal.jsx";
 import AmberMotionBackground from "./components/AmberMotionBackground.jsx";
-import AdminOrdersModal from "./components/AdminOrdersModal.jsx";
+
+const OrderModal = lazy(() => import("./components/OrderModal.jsx"));
+const AdminOrdersModal = lazy(() => import("./components/AdminOrdersModal.jsx"));
+
+// Preload modal chunk on hover/touch so it opens with zero latency
+const preloadOrderModal = () => {
+  import("./components/OrderModal.jsx");
+};
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -178,6 +184,8 @@ function Nav({ onOrder }) {
         <LangToggle />
         <button
           onClick={onOrder}
+          onMouseEnter={preloadOrderModal}
+          onTouchStart={preloadOrderModal}
           className="btn-ruby mwoa-nav-order"
           aria-label={t.nav.order}
           style={{
@@ -273,6 +281,8 @@ function Hero({ onOrder }) {
         <div style={{ marginTop: 40, paddingTop: 30, borderTop: "1px solid rgba(212,175,55,.25)" }}>
           <button
             onClick={onOrder}
+            onMouseEnter={preloadOrderModal}
+            onTouchStart={preloadOrderModal}
             className="btn-ruby"
             style={{
               padding: "16px 40px",
@@ -683,8 +693,16 @@ function AppInner() {
         <Authenticity />
         <Footer />
       </main>
-      <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
-      <AdminOrdersModal open={adminOpen} onClose={() => setAdminOpen(false)} />
+      {modalOpen && (
+        <Suspense fallback={null}>
+          <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
+        </Suspense>
+      )}
+      {adminOpen && (
+        <Suspense fallback={null}>
+          <AdminOrdersModal open={adminOpen} onClose={() => setAdminOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }
