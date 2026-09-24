@@ -147,7 +147,7 @@ function Nav({ onOrder }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <img src="/assets/whale.png" alt="MWOA" width="54" height="26" style={{ height: 26, width: "auto", display: "block" }} />
+        <img src="/assets/whale.png" alt="MWOA" width="54" height="26" style={{ width: 54, height: 26, display: "block" }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <span style={{ fontFamily: C.brand, fontSize: 19, letterSpacing: ".28em", color: C.gold, lineHeight: 1 }}>
             MWOA
@@ -359,7 +359,7 @@ function WhatIs() {
         <div>
           <SectionLabel>{t.what.label}</SectionLabel>
           <h2 style={h2}>{t.what.h2}</h2>
-          <img src="/assets/flourish.png" alt="" aria-hidden="true" loading="lazy" width="190" height="55" style={{ width: 190, height: "auto", marginTop: 34, display: "block", opacity: 0.9 }} />
+          <img src="/assets/flourish.png" alt="" aria-hidden="true" loading="lazy" width="190" height="55" style={{ width: 190, height: 55, marginTop: 34, display: "block", opacity: 0.9 }} />
         </div>
         <div>
           <p style={{ fontSize: 21, lineHeight: 2, color: "#d5cdbd", margin: 0, fontFamily: fonts.ui }}>{t.what.body}</p>
@@ -419,11 +419,16 @@ const PRODUCT_VIDEOS = [
   "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.30.17.mp4",
   "/VIDEOS/WhatsApp%20Video%202026-09-13%20at%2022.32.47.mp4",
 ];
+const toThumb = (src) => src.replace("/IMG/", "/IMG/thumbs/").replace(/\.(jpg|jpeg)$/, "_thumb.jpg");
+
 // One combined list for the product gallery: images first, then videos. Each
 // video borrows a product photo as its thumbnail/poster.
 const PRODUCT_MEDIA = [
-  ...PRODUCT_IMAGES.map((src) => ({ type: "image", src })),
-  ...PRODUCT_VIDEOS.map((src, i) => ({ type: "video", src, poster: PRODUCT_IMAGES[i % PRODUCT_IMAGES.length] })),
+  ...PRODUCT_IMAGES.map((src) => ({ type: "image", src, thumb: toThumb(src) })),
+  ...PRODUCT_VIDEOS.map((src, i) => {
+    const poster = PRODUCT_IMAGES[i % PRODUCT_IMAGES.length];
+    return { type: "video", src, poster, thumb: toThumb(poster) };
+  }),
 ];
 
 function Lightbox({ index, onClose, onPrev, onNext, images, captions, dir }) {
@@ -536,7 +541,7 @@ function ProductGallery() {
             onClick={() => setActive(i)}
             aria-label={`${m.type === "video" ? "▶ " : ""}${t.hero.title} ${i + 1}`}
           >
-            <img src={m.poster || m.src} alt="" loading="lazy" width="76" height="76" />
+            <img src={m.thumb || m.poster || m.src} alt="" loading="lazy" width="76" height="76" />
             {m.type === "video" && <span className="pg-thumb-play" aria-hidden>▶</span>}
           </button>
         ))}
@@ -578,7 +583,7 @@ function Authenticity() {
         <div style={{ position: "relative", padding: 44, border: "1px solid rgba(212,175,55,.45)", background: "linear-gradient(150deg,#642a2b,#342726)" }}>
           <div style={{ position: "absolute", inset: 10, border: "1px solid rgba(212,175,55,.18)", pointerEvents: "none" }} />
           <div style={{ position: "relative", textAlign: "center" }}>
-            <img src="/assets/whale.png" alt="" width="120" height="57" style={{ width: 120, height: "auto", display: "block", margin: "0 auto 22px" }} />
+            <img src="/assets/whale.png" alt="" width="120" height="57" style={{ width: 120, height: 57, display: "block", margin: "0 auto 22px" }} />
             <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".22em", color: C.gold }}>{t.proof.certLabel}</div>
             <div style={{ fontFamily: fonts.display, fontSize: 36, fontWeight: 700, color: C.paper, margin: "14px 0 6px" }}>{t.proof.certTitle}</div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 20, marginTop: 34, paddingTop: 22, borderTop: "1px solid rgba(212,175,55,.25)", fontFamily: C.mono, fontSize: 11, letterSpacing: ".1em", color: "#c8beaf" }}>
@@ -600,7 +605,7 @@ function Footer() {
       <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 60, alignItems: "start" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src="/assets/whale.png" alt="MWOA" width="71" height="34" loading="lazy" style={{ height: 34, width: "auto", display: "block" }} />
+            <img src="/assets/whale.png" alt="MWOA" width="71" height="34" loading="lazy" style={{ width: 71, height: 34, display: "block" }} />
             <span style={{ fontFamily: C.brand, fontSize: 26, letterSpacing: ".28em", color: C.gold }}>MWOA</span>
           </div>
           <p style={{ fontSize: 15, lineHeight: 1.9, color: "#c8beaf", margin: "20px 0 0", maxWidth: 340, fontFamily: fonts.ui }}>{t.footer.tagline}</p>
