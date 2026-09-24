@@ -654,9 +654,10 @@ function AppInner() {
   }, []);
 
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile = window.innerWidth < 768;
     const els = gsap.utils.toArray(".reveal");
-    if (reduce || !els.length) return;
+    if (reduce || isMobile || !els.length) return;
     gsap.set(els, { opacity: 0, y: 46 });
     const triggers = els.map((el) =>
       gsap.to(el, {
