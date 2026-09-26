@@ -632,9 +632,9 @@ function Footer() {
         <address style={{ display: "flex", flexDirection: "column", gap: 12, fontStyle: "normal" }}>
           <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".2em", color: "#d4af37", marginBottom: 4 }}>{t.footer.contact}</div>
           <a href={`https://wa.me/${String(config.whatsapp).replace(/[^0-9]/g, "")}`} style={{ fontSize: 16, fontFamily: fonts.ui, color: "#ede7da" }} aria-label={`WhatsApp: ${config.whatsapp}`}>
-            {t.footer.wa} · {config.whatsapp}
+            {t.footer.wa} · <bdi dir="ltr" style={{ direction: "ltr", unicodeBidi: "isolate" }}>{config.whatsapp}</bdi>
           </a>
-          <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui, color: "#ede7da" }}>{config.email}</a>
+          <a href={`mailto:${config.email}`} style={{ fontSize: 16, fontFamily: fonts.ui, color: "#ede7da", direction: "ltr", unicodeBidi: "isolate" }}>{config.email}</a>
         </address>
       </div>
       <div style={{ maxWidth: 1180, margin: "60px auto 0", paddingTop: 24, borderTop: "1px solid rgba(212,175,55,.15)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, fontFamily: C.mono, fontSize: 11, letterSpacing: ".14em", color: "#c8beaf" }}>

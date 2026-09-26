@@ -3,6 +3,6 @@
 // in the order form. The backend notification channels (WhatsApp / email) are
 // configured separately via environment variables — see .env.example.
 export const config = {
-  whatsapp: "+212 631883412",
-  email: "mazgouraabdalmounim@gmail.com",
+  whatsapp: "+212 775-105848",
+  email: "M.W.O.A.1111@gmail.com",
 };
