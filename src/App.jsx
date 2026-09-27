@@ -649,14 +649,18 @@ function AppInner() {
   const { dir } = useLang();
   const [modalOpen, setModalOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(() => {
-    try { return new URLSearchParams(window.location.search).get("admin") === "1"; } catch { return false; }
+    try {
+      // /admin is the real, dedicated admin URL. ?admin=1 is kept working
+      // as a legacy alias (old bookmarks/links) but /admin is what's linked
+      // and shared going forward.
+      if (window.location.pathname.replace(/\/+$/, "") === "/admin") return true;
+      return new URLSearchParams(window.location.search).get("admin") === "1";
+    } catch { return false; }
   });
   const openModal = () => setModalOpen(true);
   const closeAdmin = () => {
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("admin");
-      window.history.replaceState({}, "", url.pathname + url.search);
+      window.history.replaceState({}, "", "/");
     } catch {}
     setAdminOpen(false);
   };

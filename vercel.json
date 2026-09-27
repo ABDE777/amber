@@ -3,5 +3,8 @@
   "functions": {
     "api/assistant.js": { "maxDuration": 60 },
     "api/order.js": { "maxDuration": 15 }
-  }
+  },
+  "rewrites": [
+    { "source": "/admin", "destination": "/index.html" }
+  ]
 }
