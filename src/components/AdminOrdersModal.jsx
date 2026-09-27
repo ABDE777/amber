@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLang } from "../i18n.jsx";
+import { openInvoice } from "../lib/invoice.js";
 
 const C = {
   gold: "#D4AF37",
@@ -977,25 +978,47 @@ export default function AdminOrdersModal({ open, onClose }) {
                         </span>
                       </td>
                       <td style={{ padding: "14px 24px", textAlign: "center" }}>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedOrder(o);
-                          }}
-                          style={{
-                            padding: "6px 16px",
-                            background: "#3d2224",
-                            color: "#FFE9A8",
-                            border: "1px solid rgba(212,175,55,.4)",
-                            borderRadius: 6,
-                            cursor: "pointer",
-                            fontSize: 13,
-                            fontWeight: 600,
-                          }}
-                        >
-                          👁️ {isAr ? "عرض التفاصيل" : "View Details"}
-                        </button>
+                        <div style={{ display: "inline-flex", gap: 8 }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOrder(o);
+                            }}
+                            style={{
+                              padding: "6px 16px",
+                              background: "#3d2224",
+                              color: "#FFE9A8",
+                              border: "1px solid rgba(212,175,55,.4)",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                              fontSize: 13,
+                              fontWeight: 600,
+                            }}
+                          >
+                            👁️ {isAr ? "عرض التفاصيل" : "View Details"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openInvoice(o, lang);
+                            }}
+                            title={isAr ? "تحميل / طباعة الفاتورة" : "Download / print invoice"}
+                            style={{
+                              padding: "6px 14px",
+                              background: "#2a1c1d",
+                              color: "#D4AF37",
+                              border: "1px solid rgba(212,175,55,.4)",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                              fontSize: 13,
+                              fontWeight: 600,
+                            }}
+                          >
+                            🧾 {isAr ? "فاتورة" : "Invoice"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1185,22 +1208,41 @@ export default function AdminOrdersModal({ open, onClose }) {
                 </div>
               </div>
 
-              {/* Close button */}
-              <button
-                onClick={() => setSelectedOrder(null)}
-                style={{
-                  padding: "10px",
-                  background: "transparent",
-                  color: C.gold,
-                  border: "1px solid rgba(212,175,55,.4)",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  fontSize: 13,
-                }}
-              >
-                {isAr ? "إغلاق التفاصيل" : "Close Details"}
-              </button>
+              {/* Invoice + Close buttons */}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => openInvoice(selectedOrder, lang)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    background: "linear-gradient(135deg, #D4AF37, #b8922e)",
+                    color: "#1a0e0e",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    fontSize: 13,
+                  }}
+                >
+                  🧾 {isAr ? "تحميل / طباعة الفاتورة" : "Download / Print Invoice"}
+                </button>
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    background: "transparent",
+                    color: C.gold,
+                    border: "1px solid rgba(212,175,55,.4)",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    fontSize: 13,
+                  }}
+                >
+                  {isAr ? "إغلاق التفاصيل" : "Close Details"}
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -1,7 +1,46 @@
 import { useEffect, useRef, useState } from "react";
 import { config } from "../config.js";
 import { useLang } from "../i18n.jsx";
-import { COUNTRIES, formatPhoneWithCountry, calculatePrice, useLiveRates, useLiveSettings } from "../../lib/countries.js";
+import { COUNTRIES, formatPhoneWithCountry, calculatePrice, useLiveRates, useLiveSettings, MIN_ORDER_GRAMS, MAX_ORDER_GRAMS } from "../../lib/countries.js";
+
+// Maps a stable server-side error code (see lib/payment.js / lib/notify.js)
+// to a translated, user-facing message — never show the raw code or the
+// gateway's own (usually French/English-only) text to the customer.
+function serverErrorMessage(code, payErr, err) {
+  switch (code) {
+    case "qty_too_low":
+      return err.qty;
+    case "qty_too_high":
+      return err.qtyMax;
+    case "amount_too_low":
+      return payErr.amountTooLow;
+    case "amount_too_high":
+      return payErr.amountTooHigh;
+    case "invalid_email":
+      return payErr.invalidEmail;
+    case "gateway_config_error":
+      return payErr.gatewayConfig;
+    case "network_error":
+      return payErr.network;
+    default:
+      return payErr.generic;
+  }
+}
+
+// Classifies a raw error message from yp.js / YouCan Pay's own payment
+// element (card declined, expired, bad CVV, etc.) into a translated
+// message, instead of surfacing the gateway's raw text as-is.
+function gatewayErrorMessage(raw, payErr) {
+  const msg = String(raw || "").toLowerCase();
+  if (/insufficient|balance|fund/.test(msg)) return payErr.insufficientFunds;
+  if (/expir/.test(msg)) return payErr.expiredCard;
+  if (/cvv|cvc|security code/.test(msg)) return payErr.invalidCvv;
+  if (/card number|invalid card|luhn/.test(msg)) return payErr.invalidCard;
+  if (/declin/.test(msg)) return payErr.cardDeclined;
+  if (/3d.?secure|3ds|authent/.test(msg)) return payErr.threeDsFailed;
+  if (/network|timeout|connection/.test(msg)) return payErr.network;
+  return payErr.generic;
+}
 
 const C = {
   gold: "#D4AF37",
@@ -16,6 +55,8 @@ const adminDigits = String(config.whatsapp).replace(/[^0-9]/g, "");
 export default function OrderModal({ open, onClose }) {
   const { t, fonts, dir, lang } = useLang();
   const m = t.modal;
+  const errT = m.err || {};
+  const payErr = m.payErr || {};
   const isAr = dir === "rtl";
   const liveRates = useLiveRates();
   const liveSettings = useLiveSettings(); // { basePriceMad, taxPercent, shippingMad, packagingMad }
@@ -141,7 +182,7 @@ export default function OrderModal({ open, onClose }) {
 
         payment.on("error", (err) => {
           if (!cancelled) {
-            setFailMessage(err.message || (isAr ? "خطأ في نموذج الدفع" : "Payment form error"));
+            setFailMessage(gatewayErrorMessage(err?.message, payErr));
             setStatus("fail");
           }
         });
@@ -150,7 +191,7 @@ export default function OrderModal({ open, onClose }) {
         if (!cancelled) ypRef.current = payment;
       } catch (err) {
         if (!cancelled) {
-          setFailMessage(err.message || (isAr ? "تعذر تحميل نموذج الدفع" : "Could not load payment form"));
+          setFailMessage(gatewayErrorMessage(err?.message, payErr));
           setStatus("fail");
         }
       }
@@ -200,7 +241,8 @@ export default function OrderModal({ open, onClose }) {
     const err = {};
     if (!form.name.trim()) err.name = m.errName || (m.err && m.err.name) || "Name required";
     const q = Number(form.qty);
-    if (!q || q <= 0) err.qty = m.errQty || (m.err && m.err.qty) || "Valid quantity required";
+    if (!q || q < MIN_ORDER_GRAMS) err.qty = m.errQty || errT.qty || "Valid quantity required";
+    else if (q > MAX_ORDER_GRAMS) err.qty = errT.qtyMax || `Maximum order quantity is ${MAX_ORDER_GRAMS} g`;
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       err.email = m.errEmail || (m.err && m.err.email) || "Valid email required";
     }
@@ -360,12 +402,12 @@ export default function OrderModal({ open, onClose }) {
           setStatus("card_form");
           return;
         } else {
-          setFailMessage(data.error || (isAr ? "تعذر إنشاء جلسة الدفع" : "Failed to initialize payment session"));
+          setFailMessage(serverErrorMessage(data.error, payErr, errT));
           setStatus("fail");
         }
       } catch (err) {
         console.error("[Card Payment Error]:", err);
-        setFailMessage(err.message || (isAr ? "خطأ في الاتصال بالبوابة" : "Connection error"));
+        setFailMessage(payErr.network || (isAr ? "خطأ في الاتصال بالبوابة" : "Connection error"));
         setStatus("fail");
       }
       return;
@@ -628,11 +670,11 @@ export default function OrderModal({ open, onClose }) {
                     // which updates the order status shortly after this.
                     setStatus("paid_success");
                   } else {
-                    setFailMessage(result.error?.message || (isAr ? "فشل الدفع. تحقق من بيانات البطاقة." : "Payment failed. Please check your card details."));
+                    setFailMessage(gatewayErrorMessage(result.error?.message || result.error?.code, payErr));
                     setStatus("fail");
                   }
                 } catch (err) {
-                  setFailMessage(err.message || (isAr ? "خطأ غير متوقع" : "Unexpected error"));
+                  setFailMessage(gatewayErrorMessage(err?.message, payErr));
                   setStatus("fail");
                 }
               }}
@@ -922,7 +964,7 @@ export default function OrderModal({ open, onClose }) {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
               {field(m.name, "name", "text", m.namePh)}
-              {field(m.qty, "qty", "number", m.qtyPh, { min: 1, inputMode: "numeric" })}
+              {field(m.qty, "qty", "number", m.qtyPh, { min: MIN_ORDER_GRAMS, max: MAX_ORDER_GRAMS, inputMode: "numeric" })}
               {selectField(m.countryResidence, "country_residence", m.countryResidencePh)}
               {selectField(m.countryDelivery, "country_delivery", m.countryDeliveryPh)}
 
