@@ -277,14 +277,12 @@ export default function AdminOrdersModal({ open, onClose }) {
           position: "fixed",
           inset: 0,
           zIndex: 1000,
-          background: "rgba(18,10,11,.92)",
-          backdropFilter: "blur(10px)",
+          background: "#1b1213",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           padding: 20,
         }}
-        onClick={onClose}
       >
         {needsAuth === null ? (
           <div style={{ color: C.gold, fontSize: 15, fontFamily: fonts.ui }}>
@@ -404,24 +402,18 @@ export default function AdminOrdersModal({ open, onClose }) {
         position: "fixed",
         inset: 0,
         zIndex: 1000,
-        background: "rgba(18,10,11,.88)",
-        backdropFilter: "blur(10px)",
+        background: C.panel,
         display: "flex",
-        alignItems: "center",
+        alignItems: "stretch",
         justifyContent: "center",
-        padding: "20px",
       }}
-      onClick={onClose}
     >
       <div
-        onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(960px, 96vw)",
-          maxHeight: "90vh",
+          width: "100%",
+          maxWidth: 1180,
+          height: "100%",
           background: C.panel,
-          border: "1px solid rgba(212,175,55,.45)",
-          borderRadius: 14,
-          boxShadow: "0 30px 80px rgba(0,0,0,.7)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",

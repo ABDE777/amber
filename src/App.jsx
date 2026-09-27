@@ -652,6 +652,14 @@ function AppInner() {
     try { return new URLSearchParams(window.location.search).get("admin") === "1"; } catch { return false; }
   });
   const openModal = () => setModalOpen(true);
+  const closeAdmin = () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("admin");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    } catch {}
+    setAdminOpen(false);
+  };
 
   // Automatically open modal if customer returns with ?payment=success or ?payment=error
   useEffect(() => {
@@ -688,6 +696,17 @@ function AppInner() {
     };
   }, []);
 
+  // The admin dashboard is a separate page, not an overlay on top of the
+  // storefront: render it exclusively instead of stacking it over the
+  // (still-mounted) store content.
+  if (adminOpen) {
+    return (
+      <Suspense fallback={<div style={{ minHeight: "100vh", background: "#251819" }} />}>
+        <AdminOrdersModal open={adminOpen} onClose={closeAdmin} />
+      </Suspense>
+    );
+  }
+
   return (
     <div dir={dir} style={{ background: "#342726", overflowX: "hidden" }}>
       {/* Skip-to-content link for keyboard users */}
@@ -706,11 +725,6 @@ function AppInner() {
       {modalOpen && (
         <Suspense fallback={null}>
           <OrderModal open={modalOpen} onClose={() => setModalOpen(false)} />
-        </Suspense>
-      )}
-      {adminOpen && (
-        <Suspense fallback={null}>
-          <AdminOrdersModal open={adminOpen} onClose={() => setAdminOpen(false)} />
         </Suspense>
       )}
     </div>
