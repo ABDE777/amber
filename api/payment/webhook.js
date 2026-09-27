@@ -33,18 +33,32 @@ function isSandbox() {
 }
 
 async function readRawBody(req) {
-  if (Buffer.isBuffer(req.body)) return req.body;
-  if (typeof req.body === "string") return Buffer.from(req.body);
+  if (Buffer.isBuffer(req.body)) {
+    console.log("[Payment Webhook] Raw body source: Buffer (bodyParser:false honored)");
+    return req.body;
+  }
+  if (typeof req.body === "string") {
+    console.log("[Payment Webhook] Raw body source: string");
+    return Buffer.from(req.body);
+  }
   if (req.body && typeof req.body === "object" && Object.keys(req.body).length) {
-    // Something upstream already parsed JSON (e.g. our local Vite dev
-    // middleware, which doesn't honor the bodyParser:false config above).
-    // Re-serializing loses byte-for-byte fidelity in edge cases but keeps
-    // local testing working; Vercel itself hits the stream-read path below.
+    // Something upstream already parsed JSON — either our local Vite dev
+    // middleware (which doesn't honor bodyParser:false), or Vercel itself
+    // ignoring that config for this deployment. Either way we've lost the
+    // exact original bytes; re-serializing is the best recovery, and
+    // verifySignature() below also tries this same buffer as a fallback
+    // candidate in case this *is* the pre-parsed object.
+    console.warn("[Payment Webhook] Raw body source: pre-parsed object (bodyParser:false NOT honored) — signature verification may fail on byte differences");
     return Buffer.from(JSON.stringify(req.body));
   }
+  console.log("[Payment Webhook] Raw body source: stream read");
   const chunks = [];
   for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   return Buffer.concat(chunks);
+}
+
+function hmacHex(privateKey, buf) {
+  return crypto.createHmac("sha256", privateKey).update(buf).digest("hex");
 }
 
 function verifySignature(rawBody, signature) {
@@ -52,8 +66,29 @@ function verifySignature(rawBody, signature) {
   if (!privateKey) return { ok: false, reason: "youcanpay_not_configured" };
   if (!signature) return { ok: false, reason: "missing_signature_header" };
 
-  const expected = crypto.createHmac("sha256", privateKey).update(rawBody).digest("hex");
-  return { ok: safeEqual(String(signature).trim(), expected), reason: "signature_mismatch" };
+  const provided = String(signature).trim();
+
+  // Primary: HMAC over the exact bytes we received.
+  if (safeEqual(provided, hmacHex(privateKey, rawBody))) {
+    return { ok: true, reason: "matched_raw" };
+  }
+
+  // Fallback: if those bytes are valid JSON, also try the canonical
+  // re-serialization — guards against a byte-level difference introduced
+  // somewhere between YouCan Pay and this handler (e.g. bodyParser:false
+  // silently not being honored, or whitespace/formatting differences) that
+  // would otherwise reject an otherwise-legitimate, correctly-signed event.
+  try {
+    const canonical = Buffer.from(JSON.stringify(JSON.parse(rawBody.toString("utf8"))));
+    if (!canonical.equals(rawBody) && safeEqual(provided, hmacHex(privateKey, canonical))) {
+      console.warn("[Payment Webhook] Signature matched only the re-serialized JSON, not the raw bytes — investigate the raw body source above.");
+      return { ok: true, reason: "matched_canonical" };
+    }
+  } catch {
+    // rawBody wasn't valid JSON; nothing more to try.
+  }
+
+  return { ok: false, reason: "signature_mismatch" };
 }
 
 // Extra defense-in-depth for live transactions: look the transaction up
