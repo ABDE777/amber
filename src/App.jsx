@@ -153,7 +153,7 @@ function Nav({ onOrder }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <img src="/assets/whale.png" alt="MWOA" width="54" height="26" style={{ width: 54, height: 26, display: "block" }} />
+        <img src="/assets/logo-mwoa.png" alt="MWOA" width="40" height="40" style={{ width: 40, height: 40, display: "block", borderRadius: 6 }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <span style={{ fontFamily: C.brand, fontSize: 19, letterSpacing: ".28em", color: C.gold, lineHeight: 1 }}>
             MWOA
@@ -602,7 +602,7 @@ function Authenticity() {
         <div style={{ position: "relative", padding: 44, border: "1px solid rgba(212,175,55,.45)", background: "linear-gradient(150deg,#642a2b,#342726)" }}>
           <div style={{ position: "absolute", inset: 10, border: "1px solid rgba(212,175,55,.18)", pointerEvents: "none" }} />
           <div style={{ position: "relative", textAlign: "center" }}>
-            <img src="/assets/whale.png" alt="" width="120" height="57" style={{ width: 120, height: 57, display: "block", margin: "0 auto 22px" }} />
+            <img src="/assets/logo-mwoa.png" alt="" width="100" height="100" style={{ width: 100, height: 100, display: "block", margin: "0 auto 22px", borderRadius: 10 }} />
             <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: ".22em", color: C.gold }}>{t.proof.certLabel}</div>
             <div style={{ fontFamily: fonts.display, fontSize: 36, fontWeight: 700, color: C.paper, margin: "14px 0 6px" }}>{t.proof.certTitle}</div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 20, marginTop: 34, paddingTop: 22, borderTop: "1px solid rgba(212,175,55,.25)", fontFamily: C.mono, fontSize: 11, letterSpacing: ".1em", color: "#c8beaf" }}>
@@ -624,7 +624,7 @@ function Footer() {
       <div className="mwoa-footer-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 60, alignItems: "start" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src="/assets/whale.png" alt="MWOA" width="71" height="34" loading="lazy" style={{ width: 71, height: 34, display: "block" }} />
+            <img src="/assets/logo-mwoa.png" alt="MWOA" width="44" height="44" loading="lazy" style={{ width: 44, height: 44, display: "block", borderRadius: 6 }} />
             <span style={{ fontFamily: C.brand, fontSize: 26, letterSpacing: ".28em", color: C.gold }}>MWOA</span>
           </div>
           <p style={{ fontSize: 15, lineHeight: 1.9, color: "#c8beaf", margin: "20px 0 0", maxWidth: 340, fontFamily: fonts.ui }}>{t.footer.tagline}</p>
