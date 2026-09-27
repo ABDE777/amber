@@ -274,9 +274,8 @@ export default function AdminOrdersModal({ open, onClose }) {
       <div
         dir={dir}
         style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 1000,
+          minHeight: "100vh",
+          width: "100%",
           background: "#1b1213",
           display: "flex",
           alignItems: "center",
@@ -399,9 +398,8 @@ export default function AdminOrdersModal({ open, onClose }) {
     <div
       dir={dir}
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1000,
+        minHeight: "100vh",
+        width: "100%",
         background: C.panel,
         display: "flex",
         alignItems: "stretch",
@@ -412,11 +410,10 @@ export default function AdminOrdersModal({ open, onClose }) {
         style={{
           width: "100%",
           maxWidth: 1180,
-          height: "100%",
+          minHeight: "100vh",
           background: C.panel,
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden",
           position: "relative",
         }}
       >
