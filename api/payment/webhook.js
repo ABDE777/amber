@@ -16,10 +16,21 @@ function verifyWebhookToken(req) {
   const expected = (process.env.YOUCANPAY_WEBHOOK_TOKEN || "").trim();
   if (!expected) return { configured: false, ok: true };
 
-  const host = req.headers?.host || "localhost";
-  const url = new URL(req.url || "/", `http://${host}`);
+  // Vercel's Node runtime pre-parses the query string into req.query; our
+  // local dev middleware (vite.config.js) does not, so fall back to parsing
+  // req.url by hand there. Checking both makes this robust across the two.
+  let queryToken = req.query?.token;
+  if (queryToken === undefined) {
+    try {
+      const host = req.headers?.host || "localhost";
+      queryToken = new URL(req.url || "/", `http://${host}`).searchParams.get("token");
+    } catch {
+      queryToken = null;
+    }
+  }
+
   const body = typeof req.body === "object" && req.body ? req.body : {};
-  const provided = req.headers?.["x-webhook-token"] || url.searchParams.get("token") || body.token || "";
+  const provided = req.headers?.["x-webhook-token"] || queryToken || body.token || "";
 
   return { configured: true, ok: Boolean(provided) && safeEqual(String(provided), expected) };
 }
@@ -36,7 +47,12 @@ export default async function handler(req, res) {
       "[Payment Webhook] YOUCANPAY_WEBHOOK_TOKEN is not set — this endpoint is UNVERIFIED and anyone can mark orders as paid. Set YOUCANPAY_WEBHOOK_TOKEN and add ?token=<it> to the webhook URL configured in YouCan Pay."
     );
   } else if (!verify.ok) {
-    console.warn("[Payment Webhook] Rejected: missing or invalid webhook token");
+    // No secret values logged — just enough to tell "token missing from the
+    // request" apart from "token present but doesn't match ADMIN env var".
+    console.warn(
+      "[Payment Webhook] Rejected: webhook token missing or mismatched",
+      { hasQueryToken: req.query?.token !== undefined, hasUrl: Boolean(req.url) }
+    );
     return res.status(401).json({ ok: false, error: "invalid_webhook_token" });
   }
 
