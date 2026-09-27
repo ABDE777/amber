@@ -24,9 +24,9 @@ function apiDevServer() {
         const name = pathname.slice("/api/".length);
         if (!/^[a-zA-Z0-9_/-]+$/.test(name)) return next();
 
-        let handler;
+        let handler, mod;
         try {
-          const mod = await server.ssrLoadModule(`/api/${name}.js`);
+          mod = await server.ssrLoadModule(`/api/${name}.js`);
           handler = mod.default;
         } catch {
           res.statusCode = 404;
@@ -37,20 +37,27 @@ function apiDevServer() {
           return res.end();
         }
 
-        // Collect and JSON-parse the body (Vercel parses it for you).
-        let raw = "";
-        await new Promise((resolve) => {
-          req.on("data", (c) => (raw += c));
-          req.on("end", resolve);
-        });
-        if (raw && (req.headers["content-type"] || "").includes("application/json")) {
-          try {
-            req.body = JSON.parse(raw);
-          } catch {
-            req.body = {};
+        // Collect and JSON-parse the body (Vercel parses it for you) —
+        // unless the handler opts out via `export const config = { api: {
+        // bodyParser: false } }` (e.g. a webhook that needs the exact raw
+        // bytes for signature verification). In that case leave the
+        // request stream untouched so the handler can read it itself,
+        // matching Vercel's real behavior for that config.
+        if (mod.config?.api?.bodyParser !== false) {
+          let raw = "";
+          await new Promise((resolve) => {
+            req.on("data", (c) => (raw += c));
+            req.on("end", resolve);
+          });
+          if (raw && (req.headers["content-type"] || "").includes("application/json")) {
+            try {
+              req.body = JSON.parse(raw);
+            } catch {
+              req.body = {};
+            }
+          } else {
+            req.body = raw;
           }
-        } else {
-          req.body = raw;
         }
 
         // Minimal Vercel-style res helpers.
