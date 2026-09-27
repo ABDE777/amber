@@ -26,6 +26,12 @@ export default function AdminOrdersModal({ open, onClose }) {
   const [toastMsg, setToastMsg] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  // Admin session: null = not checked yet, true = needs login, false = signed in.
+  const [needsAuth, setNeedsAuth] = useState(null);
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
   const DEFAULT_RATES = {
     MAD: 400,
     SAR: 160,
@@ -93,6 +99,10 @@ export default function AdminOrdersModal({ open, onClose }) {
           pass_gateway_fee: passGatewayFee,
         }),
       });
+      if (res.status === 401 || res.status === 503) {
+        setNeedsAuth(true);
+        return;
+      }
       const data = await res.json();
       if (data.ok) {
         setFeesSaved(true);
@@ -133,8 +143,13 @@ export default function AdminOrdersModal({ open, onClose }) {
     setLoading(true);
     try {
       const res = await fetch("/api/orders?format=json");
+      if (res.status === 401 || res.status === 503) {
+        setNeedsAuth(true);
+        return;
+      }
       const data = await res.json();
       if (data.ok && Array.isArray(data.orders)) {
+        setNeedsAuth(false);
         setOrders(data.orders);
         if (selectedOrder) {
           const updated = data.orders.find((o) => o.ID === selectedOrder.ID);
@@ -146,6 +161,49 @@ export default function AdminOrdersModal({ open, onClose }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!authPassword) return;
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: authPassword }),
+      });
+      if (res.ok) {
+        setAuthPassword("");
+        setNeedsAuth(false);
+        fetchOrders();
+        loadSettings();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setAuthError(
+          data.error === "admin_not_configured"
+            ? isAr
+              ? "لوحة التحكم غير مُفعّلة على الخادم بعد."
+              : "Admin dashboard isn't configured on the server yet."
+            : isAr
+            ? "كلمة المرور غير صحيحة."
+            : "Incorrect password."
+        );
+      }
+    } catch {
+      setAuthError(isAr ? "خطأ في الاتصال بالخادم." : "Network error.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } catch {}
+    setOrders([]);
+    setNeedsAuth(true);
   };
 
   useEffect(() => {
@@ -171,6 +229,10 @@ export default function AdminOrdersModal({ open, onClose }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId, status: newStatus }),
       });
+      if (res.status === 401 || res.status === 503) {
+        setNeedsAuth(true);
+        return;
+      }
       const data = await res.json();
       if (data.ok) {
         setToastMsg(isAr ? `✓ تم تحديث حالة الطلب ${orderId} إلى: ${newStatus}` : `✓ Updated ${orderId} to: ${newStatus}`);
@@ -182,6 +244,98 @@ export default function AdminOrdersModal({ open, onClose }) {
   };
 
   if (!open) return null;
+
+  if (needsAuth !== false) {
+    return (
+      <div
+        dir={dir}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 1000,
+          background: "rgba(18,10,11,.92)",
+          backdropFilter: "blur(10px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 20,
+        }}
+        onClick={onClose}
+      >
+        {needsAuth === null ? (
+          <div style={{ color: C.gold, fontSize: 15, fontFamily: fonts.ui }}>
+            {isAr ? "جاري التحقق..." : "Checking access..."}
+          </div>
+        ) : (
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleLogin}
+            style={{
+              width: "min(340px, 92vw)",
+              background: C.panel,
+              border: "1px solid rgba(212,175,55,.45)",
+              borderRadius: 14,
+              boxShadow: "0 30px 80px rgba(0,0,0,.7)",
+              padding: "32px 28px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+            }}
+          >
+            <div style={{ textAlign: "center", fontSize: 18, fontWeight: 800, color: C.gold, fontFamily: fonts.display }}>
+              🔒 {isAr ? "دخول لوحة التحكم" : "Admin Sign In"}
+            </div>
+            {authError && (
+              <div style={{ fontSize: 13, color: "#ff8080", textAlign: "center" }}>{authError}</div>
+            )}
+            <input
+              type="password"
+              autoFocus
+              autoComplete="current-password"
+              placeholder={isAr ? "كلمة المرور" : "Password"}
+              value={authPassword}
+              onChange={(e) => setAuthPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                background: "#1c1112",
+                border: "1px solid rgba(212,175,55,.4)",
+                borderRadius: 8,
+                color: C.paper,
+                fontSize: 15,
+                outline: "none",
+                fontFamily: fonts.ui,
+              }}
+            />
+            <button
+              type="submit"
+              disabled={authLoading || !authPassword}
+              style={{
+                padding: "12px",
+                background: "linear-gradient(135deg, #D4AF37, #b8922e)",
+                color: "#1a0e0e",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 800,
+                fontSize: 15,
+                cursor: authLoading ? "wait" : "pointer",
+                opacity: authLoading || !authPassword ? 0.7 : 1,
+              }}
+            >
+              {authLoading ? "…" : isAr ? "دخول" : "Sign In"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ background: "transparent", border: "none", color: C.body, fontSize: 13, cursor: "pointer" }}
+            >
+              {isAr ? "إلغاء" : "Cancel"}
+            </button>
+          </form>
+        )}
+      </div>
+    );
+  }
 
   const filtered = orders.filter((o) => {
     const q = search.toLowerCase();
@@ -389,6 +543,21 @@ export default function AdminOrdersModal({ open, onClose }) {
               }}
             >
               🔄
+            </button>
+            <button
+              onClick={handleLogout}
+              title={isAr ? "تسجيل الخروج" : "Sign out"}
+              style={{
+                padding: "8px 12px",
+                background: "#382526",
+                color: C.paper,
+                border: "1px solid rgba(212,175,55,.3)",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontSize: 13,
+              }}
+            >
+              🔒 {isAr ? "خروج" : "Sign out"}
             </button>
             <button
               onClick={onClose}
