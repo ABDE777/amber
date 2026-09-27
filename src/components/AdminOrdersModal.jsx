@@ -59,6 +59,27 @@ export default function AdminOrdersModal({ open, onClose }) {
   const [savingFees, setSavingFees] = useState(false);
   const [feesSaved, setFeesSaved] = useState(false);
 
+  // System status (storage / email / WhatsApp / payment configuration)
+  const [diagnostics, setDiagnostics] = useState(null);
+  const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
+
+  const loadDiagnostics = async () => {
+    setDiagnosticsLoading(true);
+    try {
+      const res = await fetch("/api/admin/diagnostics");
+      if (res.status === 401 || res.status === 503) {
+        setNeedsAuth(true);
+        return;
+      }
+      const data = await res.json();
+      if (data.ok) setDiagnostics(data);
+    } catch (err) {
+      console.warn("[Admin] Could not load diagnostics:", err.message);
+    } finally {
+      setDiagnosticsLoading(false);
+    }
+  };
+
   const loadSettings = async () => {
     try {
       const res = await fetch("/api/settings");
@@ -179,6 +200,7 @@ export default function AdminOrdersModal({ open, onClose }) {
         setNeedsAuth(false);
         fetchOrders();
         loadSettings();
+        loadDiagnostics();
       } else {
         const data = await res.json().catch(() => ({}));
         setAuthError(
@@ -210,6 +232,7 @@ export default function AdminOrdersModal({ open, onClose }) {
     if (open) {
       fetchOrders();
       loadSettings();
+      loadDiagnostics();
     } else {
       setSelectedOrder(null);
     }
@@ -573,6 +596,103 @@ export default function AdminOrdersModal({ open, onClose }) {
               ×
             </button>
           </div>
+        </div>
+
+        {/* SYSTEM STATUS — surfaces missing/broken env config directly instead of only in server logs */}
+        <div style={{ margin: "16px 24px 0", background: "#1c1112", border: "1px solid rgba(212,175,55,.25)", borderRadius: 10, padding: "12px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+            <div style={{ fontSize: 12, color: C.gold, fontWeight: 800, letterSpacing: ".06em" }}>
+              ⚙️ {isAr ? "حالة النظام" : "System Status"}
+            </div>
+            <button
+              onClick={loadDiagnostics}
+              disabled={diagnosticsLoading}
+              style={{ background: "transparent", border: "1px solid rgba(212,175,55,.3)", color: "#a79f8f", borderRadius: 6, padding: "3px 10px", fontSize: 11, cursor: "pointer" }}
+            >
+              {diagnosticsLoading ? "…" : isAr ? "🔄 تحديث" : "🔄 Refresh"}
+            </button>
+          </div>
+          {!diagnostics ? (
+            <div style={{ fontSize: 12, color: "#8d8578" }}>{isAr ? "جاري التحقق..." : "Checking..."}</div>
+          ) : (
+            (() => {
+              const email = diagnostics.notifications.email;
+              const whatsapp = diagnostics.notifications.whatsapp;
+              const items = [
+                {
+                  label: isAr ? "حفظ الطلبات (CSV)" : "Order storage (CSV)",
+                  ok: diagnostics.storage.persistent,
+                  hint: diagnostics.storage.persistent
+                    ? (isAr ? "دائم" : "Persistent")
+                    : isAr
+                    ? "مؤقت فقط — الطلبات تُفقد عند إعادة تشغيل الخادم. أضف GITHUB_TOKEN في Vercel."
+                    : "Temporary only — orders are lost on server restart. Add GITHUB_TOKEN in Vercel.",
+                },
+                {
+                  label: isAr ? "البريد الإلكتروني" : "Email",
+                  ok: email.configured && email.ok !== false,
+                  hint: !email.configured
+                    ? (isAr ? `متغيرات ناقصة: ${email.missing?.join(", ")}` : `Missing env vars: ${email.missing?.join(", ")}`)
+                    : email.ok === false
+                    ? (isAr ? `فشل تسجيل الدخول: ${email.error}` : `Auth failed: ${email.error}`)
+                    : (isAr ? "متصل" : "Connected"),
+                },
+                {
+                  label: isAr ? "واتساب (CallMeBot)" : "WhatsApp (CallMeBot)",
+                  ok: whatsapp.configured,
+                  hint: whatsapp.configured
+                    ? (isAr ? "مُفعّل" : "Enabled")
+                    : (isAr ? `متغيرات ناقصة: ${whatsapp.missing?.join(", ")}` : `Missing env vars: ${whatsapp.missing?.join(", ")}`),
+                  warnOnly: true,
+                },
+                {
+                  label: isAr ? "بوابة الدفع (YouCan Pay)" : "Payment (YouCan Pay)",
+                  ok: diagnostics.payment.youcanpay_configured,
+                  hint: diagnostics.payment.youcanpay_configured
+                    ? (diagnostics.payment.youcanpay_sandbox ? (isAr ? "وضع تجريبي (Sandbox)" : "Sandbox mode") : (isAr ? "وضع حقيقي (Live)" : "Live mode"))
+                    : (isAr ? "غير مُفعّل — الطلبات ستستخدم واتساب فقط" : "Not configured — orders fall back to WhatsApp only"),
+                  warnOnly: true,
+                },
+                {
+                  label: isAr ? "حماية Webhook الدفع" : "Payment webhook security",
+                  ok: diagnostics.payment.webhook_token_configured,
+                  hint: diagnostics.payment.webhook_token_configured
+                    ? (isAr ? "محمي" : "Protected")
+                    : (isAr ? "غير محمي — أضف YOUCANPAY_WEBHOOK_TOKEN" : "Unprotected — add YOUCANPAY_WEBHOOK_TOKEN"),
+                  warnOnly: true,
+                },
+              ];
+              return (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  {items.map((it) => {
+                    const color = it.ok ? "#25D366" : it.warnOnly ? "#FFB800" : "#ef4444";
+                    return (
+                      <div
+                        key={it.label}
+                        title={it.hint}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                          padding: "6px 12px",
+                          borderRadius: 8,
+                          border: `1px solid ${color}55`,
+                          background: `${color}14`,
+                          minWidth: 150,
+                        }}
+                      >
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#ede7da", display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block" }} />
+                          {it.label}
+                        </div>
+                        <div style={{ fontSize: 10.5, color: "#a79f8f" }}>{it.hint}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()
+          )}
         </div>
 
         {/* FINANCIAL REVENUE STATS CARDS */}
