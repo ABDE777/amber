@@ -2,16 +2,21 @@
 // POST /api/settings — Update base price or other settings
 
 import { getSettings, updateSettings } from "../lib/settings_storage.js";
+import { requireAdmin } from "../lib/security.js";
 
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 
   if (req.method === "GET") {
+    // Public on purpose: the storefront reads the live price/fees to display them.
     const settings = await getSettings();
     return res.status(200).json({ ok: true, settings });
   }
 
   if (req.method === "POST" || req.method === "PATCH") {
+    // Mutating pricing/fees is admin-only.
+    if (!requireAdmin(req, res)) return;
+
     let body = req.body;
     if (typeof body === "string") {
       try {

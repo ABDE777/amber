@@ -1,6 +1,11 @@
 import { readOrdersCsvAsync, parseOrdersFromCsv, updateOrderStatus } from "../lib/orders_storage.js";
+import { requireAdmin } from "../lib/security.js";
 
+// Every method on this route exposes customer PII (name/email/phone/address)
+// or lets the caller mutate order status, so the whole handler is gated.
 export default async function handler(req, res) {
+  if (!requireAdmin(req, res)) return;
+
   // Handle POST/PATCH to update order status
   if (req.method === "POST" || req.method === "PATCH") {
     let body = req.body;

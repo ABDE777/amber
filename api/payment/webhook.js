@@ -4,11 +4,40 @@
 
 import { updateOrderStatus, readOrdersCsvAsync, parseOrdersFromCsv } from "../../lib/orders_storage.js";
 import { notifyAdmin } from "../../lib/notify.js";
+import { safeEqual } from "../../lib/security.js";
+
+// Verifies the shared secret configured as YOUCANPAY_WEBHOOK_TOKEN. Without
+// it, anyone who finds this URL can POST {order_id, status:"paid"} and mark
+// any order as paid. Configure the token and append `?token=<it>` (or send
+// it as an `x-webhook-token` header) on the webhook URL registered with
+// YouCan Pay to close that hole. Fails open (with a loud warning) until the
+// token is set, so existing unconfigured deployments don't silently break.
+function verifyWebhookToken(req) {
+  const expected = (process.env.YOUCANPAY_WEBHOOK_TOKEN || "").trim();
+  if (!expected) return { configured: false, ok: true };
+
+  const host = req.headers?.host || "localhost";
+  const url = new URL(req.url || "/", `http://${host}`);
+  const body = typeof req.body === "object" && req.body ? req.body : {};
+  const provided = req.headers?.["x-webhook-token"] || url.searchParams.get("token") || body.token || "";
+
+  return { configured: true, ok: Boolean(provided) && safeEqual(String(provided), expected) };
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST" && req.method !== "GET") {
     res.setHeader("Allow", "GET, POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
+  }
+
+  const verify = verifyWebhookToken(req);
+  if (!verify.configured) {
+    console.warn(
+      "[Payment Webhook] YOUCANPAY_WEBHOOK_TOKEN is not set — this endpoint is UNVERIFIED and anyone can mark orders as paid. Set YOUCANPAY_WEBHOOK_TOKEN and add ?token=<it> to the webhook URL configured in YouCan Pay."
+    );
+  } else if (!verify.ok) {
+    console.warn("[Payment Webhook] Rejected: missing or invalid webhook token");
+    return res.status(401).json({ ok: false, error: "invalid_webhook_token" });
   }
 
   // Handle GET for healthcheck or manual webhook ping
