@@ -834,7 +834,6 @@ export default async function handler(req, res) {
       document.getElementById("mLblEmail").innerText = d.lblEmail;
       document.getElementById("mLblResidence").innerText = d.lblResidence;
       document.getElementById("mLblDelivery").innerText = d.lblDelivery;
-      document.getElementById("mLblSource").innerText = d.lblSource;
       document.getElementById("mLblChangeStatus").innerText = d.lblChangeStatus;
       document.getElementById("mSubStatus").innerText = d.mSubStatus;
       document.getElementById("mBtnClose").innerText = d.btnClose;
