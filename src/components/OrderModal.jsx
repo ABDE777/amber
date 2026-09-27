@@ -117,10 +117,8 @@ export default function OrderModal({ open, onClose }) {
 
       try {
         const locale = lang === "ar" ? "ar" : lang === "fr" ? "fr" : "en";
-        const isSandbox = Boolean(ypIsSandbox || ypPublicKey.startsWith("pub_sandbox"));
         const payment = window.yp(ypPublicKey, {
           locale,
-          sandbox: isSandbox,
         })
           .elements({
             token: ypToken,
@@ -346,17 +344,18 @@ export default function OrderModal({ open, onClose }) {
         const currentId = data.order_id || `MWOA-${Date.now().toString().slice(-6)}`;
         setOrderId(currentId);
 
-        if (res.ok && data.ok && data.token && data.public_key) {
+        if (res.ok && data.ok && !data.configured) {
+          // No YouCan Pay keys configured: preserve the existing WhatsApp
+          // fallback instead of mounting the mock token in yp.js.
+          whatsappFallback(currentId);
+          setStatus("ok");
+          return;
+        } else if (res.ok && data.ok && data.token && data.public_key) {
           // Switch to inline yp.js form mode
           setYpToken(data.token);
           setYpPublicKey(data.public_key);
           setYpIsSandbox(Boolean(data.sandbox || data.public_key.startsWith("pub_sandbox")));
           setStatus("card_form");
-          return;
-        } else if (res.ok && data.ok && !data.configured) {
-          // Mock mode (no keys configured) — fall back to WhatsApp
-          whatsappFallback(currentId);
-          setStatus("ok");
           return;
         } else {
           setFailMessage(data.error || (isAr ? "تعذر إنشاء جلسة الدفع" : "Failed to initialize payment session"));
@@ -623,7 +622,7 @@ export default function OrderModal({ open, onClose }) {
                     // Don't mark the order Paid from here: this runs in the
                     // customer's own browser, so it's not proof of payment —
                     // that comes from YouCan Pay's server-to-server webhook
-                    // (/api/payment/webhook, verified with YOUCANPAY_WEBHOOK_TOKEN),
+                    // (/api/payment/webhook, verified with the private-key HMAC),
                     // which updates the order status shortly after this.
                     setStatus("paid_success");
                   } else {
