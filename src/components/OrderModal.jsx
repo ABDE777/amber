@@ -620,13 +620,11 @@ export default function OrderModal({ open, onClose }) {
                 try {
                   const result = await ypRef.current.confirm();
                   if (result.status === "succeeded") {
-                    try {
-                      await fetch("/api/payment/webhook", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ order_id: orderId, status: "paid", type: "transaction.paid" }),
-                      });
-                    } catch {}
+                    // Don't mark the order Paid from here: this runs in the
+                    // customer's own browser, so it's not proof of payment —
+                    // that comes from YouCan Pay's server-to-server webhook
+                    // (/api/payment/webhook, verified with YOUCANPAY_WEBHOOK_TOKEN),
+                    // which updates the order status shortly after this.
                     setStatus("paid_success");
                   } else {
                     setFailMessage(result.error?.message || (isAr ? "فشل الدفع. تحقق من بيانات البطاقة." : "Payment failed. Please check your card details."));
