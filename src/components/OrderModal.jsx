@@ -117,8 +117,10 @@ export default function OrderModal({ open, onClose }) {
 
       try {
         const locale = lang === "ar" ? "ar" : lang === "fr" ? "fr" : "en";
+        const isSandbox = Boolean(ypIsSandbox || ypPublicKey.startsWith("pub_sandbox"));
         const payment = window.yp(ypPublicKey, {
           locale,
+          sandbox: isSandbox,
         })
           .elements({
             token: ypToken,
